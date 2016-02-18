@@ -7,7 +7,7 @@ protocol MQTT;
 protocol Websocket;
 configuration GladiotorCfg 
 @c_compiler "/openwrt-yun/staging_dir/toolchain-mips_r2_gcc-4.6-linaro_uClibc-0.9.33.2/bin/mips-openwrt-linux-gcc"
-@add_c_libraries "mosqitto"
+@add_c_libraries "mosquitto"
 @add_c_libraries "websockets"
 @add_c_libraries "ssl"
 @add_c_libraries "crypto"
