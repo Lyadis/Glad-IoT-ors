@@ -1,0 +1,106 @@
+import "../lib/Msgs.thingml"
+
+protocol Serial1;
+
+protocol MQTT;
+
+protocol Websocket;
+configuration GladiotorCfg 
+@add_c_libraries "mosqitto"
+@add_c_libraries "websockets"
+@add_c_libraries "ssl"
+@add_c_libraries "crypto"
+@add_c_libraries "z"
+@add_c_libraries_rep "/openwrt-yun/staging_dir/target-mips_r2_uClibc-0.9.33.2/lib"
+@add_c_libraries_rep "/openwrt-yun/staging_dir/target-mips_r2_uClibc-0.9.33.2/usr/lib"
+@add_c_flags "-I/openwrt-yun/staging_dir/target-mips_r2_uClibc-0.9.33.2/usr/include"
+@add_c_flags "-I/openwrt-yun/staging_dir/target-mips_r2_uClibc-0.9.33.2/include"
+{
+	instance g : Gladiotor
+
+	connector g.cmd over Serial1
+	@serial_path_to_device "/dev/ttyATH0"
+	@serial_baudrate "115200"
+
+	connector g.control over Websocket
+	@generate_debugGUI "true"
+
+	connector g.arena over MQTT
+}
+
+
+thing Gladiotor includes GladiotorsMsgs, CmdMsgs, TimerMsgs {
+	
+	property ID : UInt8 = 0
+	property InactiveTime : UInt32 = 1000
+
+	required port cmd {
+		sends beenHit
+		receives shootCmd
+	}
+
+	required port control {
+		sends shootCmd, timer_start, timer_cancel
+		receives beenHit, timeout, ready
+	}
+
+	required port arena {
+		sends register, shooting, hitInfo
+		receives assignID, gameStart, gameStop
+	}
+
+	statechart C init Init {
+		
+		state Init {
+			on entry print "Init\n"
+			transition -> Game event control?ready
+		}
+		/*
+		composite state Game init Identification {
+			
+
+			transition -> Game event control?ready
+			action do
+				if(not(ID == 0)) do
+					arena!unregister(ID)
+				end
+			end
+
+			transition -> Game event arena?gameStop
+
+			state Identification {
+				on entry do
+					control!timer_start(1, 3000)
+					arena!register()
+				end
+
+				transition -> Wait event e : arena?assignID
+				action do 
+					print "received ID\n"
+					ID = e.ID
+					control!timer_cancel(1)
+				end
+				transition -> Identification event control?timeout
+			}
+
+			state Wait {
+				transition arena?startGame
+			}
+			state Active {
+				internal event cmd?shootCmd action control!shootCmd(ID)
+
+				transition -> Inactive event e : control?beenHit
+				action do
+					print "beenHit\n"
+					arena!hitInfo(ID, e.IDshooter)
+					cmd!beenHit(e.IDshooter)
+					control!timer_start(1, InactiveTime)
+				end
+			}
+			state Inactive {
+				transition -> Active event e : control?timeout
+			}
+
+		}*/
+	}
+}

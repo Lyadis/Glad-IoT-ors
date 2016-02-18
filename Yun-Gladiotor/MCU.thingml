@@ -1,0 +1,65 @@
+import "../lib/Msgs.thingml"
+
+protocol Serial1;
+
+protocol Timer;
+
+configuration GladiotorCfg {
+	instance mc : MCU
+
+	connector mc.control over Serial1
+	connector mc.clock over Timer
+}
+
+thing MCU includes CmdMsgs, TimerMsgs {
+	property ledPin : UInt8 = 7
+	property receiverPin : UInt8 = 8
+
+	provided port control {
+		receives shootCmd, timer_start, timer_cancel
+		sends beenHit, timeout, ready
+	}
+
+	provided port clock {
+		sends timer_start, timer_cancel
+		receives timeout, 50ms_tic
+	}
+
+	function refresh() do
+		if('digitalRead('&receiverPin&')') do
+			control!beenHit(0)
+		end
+	end
+
+	function shoot(id : UInt8) do
+		'digitalWrite('&receiverPin&', HIGH);
+		delay(50);
+		digitalWrite('&receiverPin&', LOW);'
+	end
+
+	statechart C init Setup {
+		state Setup {
+			on entry do
+				'pinMode('&receiverPin&', INPUT);'
+				'pinMode('&ledPin&', OUTPUT);'
+			end
+			transition -> Active action control!ready()
+		}
+		state Active {
+			internal event e : control?timer_start
+			action clock!timer_start(e.id, e.time)
+
+			internal event e : control?timer_cancel
+			action clock!timer_cancel(e.id)
+
+			internal event e : clock?timeout
+			action control!timeout(e.id)
+
+			internal event e : clock?50ms_tic
+			action refresh()
+
+			internal event e : control?shootCmd
+			action shoot(e.ID)
+		}
+	}
+}

@@ -1,0 +1,38 @@
+datatype Char<1>	
+	@c_type "char";
+	
+object String
+	@c_type "char *"
+	@java_type "String"
+	@js_type "String"
+	@SenML_type "String";
+    
+datatype Boolean<1>	
+	@c_type "uint8_t";
+
+datatype UInt8<1>	
+	@c_type "uint8_t";
+	
+datatype UInt16<2>	
+	@c_type "uint16_t";
+	
+datatype UInt32<4>	
+	@c_type "uint32_t";
+	
+datatype UInt64<8>	
+	@c_type "uint64_t";
+
+datatype Int8<1>	
+	@c_type "uint8_t";
+	
+datatype Int16<2>	
+	@c_type "int16_t";
+	
+datatype Int32<4>	
+	@c_type "int32_t";
+	
+datatype Int64<8>	
+	@c_type "int64_t";
+	
+datatype Byte<1>
+	@c_type "byte";

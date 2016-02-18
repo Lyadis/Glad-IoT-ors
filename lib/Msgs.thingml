@@ -1,0 +1,27 @@
+import "_Datatypes.thingml"
+
+thing fragment GladiotorsMsgs {
+
+	message register() @code "100";
+	message assignID(ID : UInt8) @code "101";
+	message unregister(ID : UInt8) @code "102";
+
+	message gameStart() @code "103";
+	message gameStop() @code "104";
+
+	message shooting(ID : UInt8, time0 : UInt8, time1 : UInt8) @code "1";
+	message hitInfo(ID : UInt8, IDshutter : UInt8) @code "2";
+}
+
+thing fragment CmdMsgs {
+	message ready() @code "200";
+	message shootCmd(ID : UInt8) @code "201";
+	message beenHit(IDshooter : UInt8) @code "202";
+}
+
+thing fragment TimerMsgs {
+	messages timer_start(id : UInt8, time : UInt32) @timer_start "true";
+	messages timer_cancel(id : UInt8) @timer_cancel "true";
+	messages timeout(id : UInt8) @timeout "true";
+	messages 50ms_tic() @xms_tic "50";
+}
