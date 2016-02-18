@@ -45,7 +45,7 @@ thing Gladiotor includes GladiotorsMsgs, CmdMsgs, TimerMsgs {
 	}
 
 	required port arena {
-		sends register, shooting, hitInfo
+		sends register, unregister, shooting, hitInfo
 		receives assignID, gameStart, gameStop
 	}
 
@@ -55,7 +55,6 @@ thing Gladiotor includes GladiotorsMsgs, CmdMsgs, TimerMsgs {
 			on entry print "Init\n"
 			transition -> Game event control?ready
 		}
-		/*
 		composite state Game init Identification {
 			
 
@@ -84,7 +83,7 @@ thing Gladiotor includes GladiotorsMsgs, CmdMsgs, TimerMsgs {
 			}
 
 			state Wait {
-				transition arena?startGame
+				transition -> Active event arena?gameStart
 			}
 			state Active {
 				internal event cmd?shootCmd action control!shootCmd(ID)
@@ -101,6 +100,6 @@ thing Gladiotor includes GladiotorsMsgs, CmdMsgs, TimerMsgs {
 				transition -> Active event e : control?timeout
 			}
 
-		}*/
+		}
 	}
 }
