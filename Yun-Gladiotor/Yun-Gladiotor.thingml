@@ -18,6 +18,10 @@ configuration GladiotorCfg
 @add_c_flags "-I/openwrt-yun/staging_dir/target-mips_r2_uClibc-0.9.33.2/include"
 {
 	instance g : Gladiotor
+	set g.ip[0] = 192
+	set g.ip[1] = 168
+	set g.ip[2] = 43
+	set g.ip[3] = 101
 
 	connector g.cmd over Serial1
 	@serial_path_to_device "/dev/ttyATH0"
@@ -34,6 +38,7 @@ thing Gladiotor includes GladiotorsMsgs, CmdMsgs, TimerMsgs {
 	
 	property ID : UInt8 = 0
 	property InactiveTime : UInt32 = 1000
+	property ip : UInt8[4]
 
 	required port cmd {
 		sends beenHit
@@ -71,7 +76,7 @@ thing Gladiotor includes GladiotorsMsgs, CmdMsgs, TimerMsgs {
 			state Identification {
 				on entry do
 					control!timer_start(1, 3000)
-					arena!register()
+					arena!register(ip[0], ip[1], ip[2], ip[3])
 				end
 
 				transition -> Wait event e : arena?assignID

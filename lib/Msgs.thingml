@@ -27,11 +27,11 @@ thing fragment TimerMsgs {
 }
 
 thing fragment GuiMsgs {
-	message gameStart();
-	message gameStop();
-	message listStatuses();
-	message getGameStatus();
-	message gameStatus(playing : Boolean);
-	message secondsLeft(secs : UInt16);
-	message teamStatus(ID : UInt8, registered : Boolean, score : Int16, shots : Int16, hits : Int16, ip1:UInt8, ip2:UInt8, ip3:UInt8, ip4:UInt8);
+	message gui_gameStart() @code "150";
+	message gui_gameStop() @code "151";
+	message listStatuses() @code "152";
+	message getGameStatus() @code "153";
+	message gameStatus(playing : Boolean) @code "154";
+	message secondsLeft(secs : UInt16) @code "155";
+	message teamStatus(ID : UInt8, registered : Boolean, score : Int16, shots : Int16, hits : Int16, ip1:UInt8, ip2:UInt8, ip3:UInt8, ip4:UInt8) @code "156";
 }

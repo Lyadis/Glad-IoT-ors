@@ -1,17 +1,23 @@
 import "../lib/Msgs.thingml"
 import "Clock.thingml"
 
-protocol WebSocket;
+protocol Websocket;
 protocol MQTT;
 
-configuration ServerCfg {
+configuration ServerCfg
+@add_c_libraries "mosquitto"
+@add_c_libraries "websockets"
+@add_c_libraries "ssl"
+@add_c_libraries "crypto"
+@add_c_libraries "z"
+{
 	instance c : ClockLinux
 	instance s : Server
 	
 	connector s.clock => c.signal
 	
 	connector s.arena over MQTT @mqtt_broker_address "127.0.0.1" @mqtt_topic "arena"
-	connector s.gui over WebSocket
+	connector s.gui over Websocket @generate_debugGUI "true"
 }
 
 thing Server includes ClockMsgs,GladiotorsMsgs,GuiMsgs {
@@ -29,13 +35,15 @@ thing Server includes ClockMsgs,GladiotorsMsgs,GuiMsgs {
 	
 	property playTime : UInt16 = 300
 	property timeLeft : UInt16 = 0
+	
+	property n : UInt8
 
 	required port arena {
 		receives register, unregister, shooting, hitInfo
 		sends assignID, gameStart, gameStop
 	}
 	provided port gui {
-		receives gameStart, gameStop, getGameStatus, listStatuses
+		receives gui_gameStart, gui_gameStop, getGameStatus, listStatuses
 		sends gameStatus, secondsLeft, teamStatus
 	}
 	required port clock {
@@ -67,7 +75,7 @@ thing Server includes ClockMsgs,GladiotorsMsgs,GuiMsgs {
 			
 			state Playing {
 				on entry do
-					var n : UInt8 = 1
+					n = 1
 					while (n < nextId) do
 						if (registered[n] == 1) do
 							scores[n] = 0
@@ -75,7 +83,7 @@ thing Server includes ClockMsgs,GladiotorsMsgs,GuiMsgs {
 							hits[n] = 0						
 							sendTeamStatus(n)
 						end
-						n++
+						n = n + 1
 					end
 				
 					gui!gameStatus(1)
@@ -86,7 +94,7 @@ thing Server includes ClockMsgs,GladiotorsMsgs,GuiMsgs {
 				end
 				
 				internal event clock?clock_tick guard (timeLeft > 1) action do
-					timeLeft --
+					timeLeft = timeLeft - 1
 					gui!secondsLeft(timeLeft)
 				end
 				
@@ -122,9 +130,9 @@ thing Server includes ClockMsgs,GladiotorsMsgs,GuiMsgs {
 				ips3[nextId] = r.ip3
 				ips4[nextId] = r.ip4
 				
-				arena!assignID(nextId)
+				arena!assignID(nextId, r.ip1, r.ip2, r.ip3, r.ip4)
 				sendTeamStatus(nextId)
-				nextId++
+				nextId = nextId + 1
 			end
 			
 			internal event u : arena?unregister action do
@@ -140,12 +148,12 @@ thing Server includes ClockMsgs,GladiotorsMsgs,GuiMsgs {
 			end
 			
 			internal event gui?listStatuses action do
-				var n : UInt8 = 1
+				n = 1
 				while (n < nextId) do
 					if (registered[n] == 1) do
 						sendTeamStatus(n)
 					end
-					n++
+					n = n + 1
 				end
 			end
 		}
