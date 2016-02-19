@@ -22,11 +22,13 @@ configuration ServerCfg
 
 thing Server includes ClockMsgs,GladiotorsMsgs,GuiMsgs {
 	
+	property pingN : UInt8 = 0
 	property nextId : UInt8 = 1
 	property registered : Boolean[256]
 	property scores : Int16[256]
 	property shots : Int16[256]
 	property hits : Int16[256]
+	property pongs : UInt8[256]
 	
 	property ips1 : UInt8[256]
 	property ips2 : UInt8[256]
@@ -37,10 +39,11 @@ thing Server includes ClockMsgs,GladiotorsMsgs,GuiMsgs {
 	property timeLeft : UInt16 = 0
 	
 	property n : UInt8
+	property t : UInt16
 
 	required port arena {
-		receives register, unregister, shooting, hitInfo
-		sends assignID, gameStart, gameStop
+		receives register, unregister, shooting, hitInfo, pong
+		sends assignID, gameStart, gameStop, ping
 	}
 	provided port gui {
 		receives gui_gameStart, gui_gameStop, getGameStatus, listStatuses
@@ -52,6 +55,19 @@ thing Server includes ClockMsgs,GladiotorsMsgs,GuiMsgs {
 	
 	function sendTeamStatus(ID : UInt8) do
 		gui!teamStatus(ID, registered[ID], scores[ID], shots[ID], hits[ID], ips1[ID],ips2[ID],ips3[ID],ips4[ID])
+	end
+	
+	function unregisterTeam(ID : UInt8) do
+		registered[ID] = 0
+		scores[ID] = 0
+		shots[ID] = 0
+		hits[ID] = 0
+		pongs[ID] = 0
+		ips1[ID] = 0
+		ips2[ID] = 0
+		ips3[ID] = 0
+		ips4[ID] = 0
+		sendTeamStatus(ID)
 	end
 	
 	statechart S init Init {
@@ -126,12 +142,42 @@ thing Server includes ClockMsgs,GladiotorsMsgs,GuiMsgs {
 					sendTeamStatus(h.ID)
 				end
 			}
+			
+			internal event clock?clock_tick action do
+				arena!ping(pingN)
+				pingN = pingN + 1
+				
+				// Check for disconnected
+				n = 1
+				while (n < nextId) do
+					if (registered[n] == 1) do
+						if (pingN < pongs[n]) do
+							t = pingN
+							t = t + 256 - pongs[n]
+							if (t > 5) do
+								unregisterTeam(n)
+							end
+						else
+							t = pingN- pongs[n]
+							if (t > 5) do
+								unregisterTeam(n)
+							end
+						end
+					end
+					n = n + 1
+				end
+			end
+			
+			internal event p : arena?pong action do
+				pongs[p.ID] = p.N
+			end			
 		
 			internal event r : arena?register action do
 				registered[nextId] = 1
 				scores[nextId] = 0
 				shots[nextId] = 0
 				hits[nextId] = 0
+				pongs[nextId] = pongN
 				ips1[nextId] = r.ip1
 				ips2[nextId] = r.ip2
 				ips3[nextId] = r.ip3
@@ -143,15 +189,7 @@ thing Server includes ClockMsgs,GladiotorsMsgs,GuiMsgs {
 			end
 			
 			internal event u : arena?unregister action do
-				registered[u.ID] = 0
-				scores[u.ID] = 0
-				shots[u.ID] = 0
-				hits[u.ID] = 0
-				ips1[u.ID] = 0
-				ips2[u.ID] = 0
-				ips3[u.ID] = 0
-				ips4[u.ID] = 0
-				sendTeamStatus(u.ID)
+				unregisterTeam(u.ID)
 			end
 			
 			internal event gui?listStatuses action do

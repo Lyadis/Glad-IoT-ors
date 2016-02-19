@@ -11,6 +11,9 @@ thing fragment GladiotorsMsgs {
 
 	message shooting(ID : UInt8, time0 : UInt8, time1 : UInt8) @code "1";
 	message hitInfo(ID : UInt8, IDshooter : UInt8) @code "2";
+	
+	message ping(N : UInt8) @code "3";
+	message pong(ID : UInt8, N : UInt8) @code "4";
 }
 
 thing fragment CmdMsgs {
