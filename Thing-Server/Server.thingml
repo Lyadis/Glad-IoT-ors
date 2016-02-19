@@ -1,6 +1,19 @@
 import "../lib/Msgs.thingml"
 import "Clock.thingml"
 
+protocol WebSocket;
+protocol MQTT;
+
+configuration ServerCfg {
+	instance c : ClockLinux
+	instance s : Server
+	
+	connector s.clock => c.signal
+	
+	connector s.arena over MQTT @mqtt_broker_address "127.0.0.1" @mqtt_topic "arena"
+	connector s.gui over WebSocket
+}
+
 thing Server includes ClockMsgs,GladiotorsMsgs,GuiMsgs {
 	
 	property nextId : UInt8 = 1
