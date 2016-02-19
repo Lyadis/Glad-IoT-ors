@@ -99,11 +99,11 @@ static int Websocket_callback_ThingML_protocol(struct libwebsocket_context * thi
             break;
         }
 		
-        /*case LWS_CALLBACK_WSI_DESTROY: {
-                uint16_t clientID = remove_client(wsi);
-		
-                printf("[Websocket] Wsi destroyed:%i\n", clientID);
-        }*/
+        //case LWS_CALLBACK_WSI_DESTROY: {
+        //        uint16_t clientID = remove_client(wsi);
+	//	
+        //        printf("[Websocket] Wsi destroyed:%i\n", clientID);
+        //}
 
         case LWS_CALLBACK_CLOSED: {
                 uint16_t clientID = remove_client(wsi);

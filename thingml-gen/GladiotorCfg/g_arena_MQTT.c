@@ -7,7 +7,7 @@
 
 #include <mosquitto.h>
 
-static char *MQTT_topic = "ThingML";
+static char *MQTT_topic = "arena";
 static int MQTT_topic_qos = 0;
 static char *MQTT_username = NULL;
 static char *MQTT_password = NULL;
@@ -130,7 +130,7 @@ void MQTT_setup() {
 	char *id = NULL;
 	char *id_prefix = NULL;
 	int i;
-	char *host = "localhost";
+	char *host = "10.59.10.3";
 	int port = 1883;
 	int keepalive = 60;
 	bool clean_session = true;

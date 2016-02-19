@@ -20,9 +20,9 @@ thing fragment CmdMsgs {
 }
 
 thing fragment TimerMsgs {
-	message timer_start(id : UInt8, time : UInt32) @timer_start "true";
-	message timer_cancel(id : UInt8) @timer_cancel "true";
-	message timeout(id : UInt8) @timeout "true";
+	message timer_start(id : UInt8, time : UInt32) @code "190" @timer_start "true";
+	message timer_cancel(id : UInt8) @code "191"@timer_cancel "true";
+	message timeout(id : UInt8) @code "192" @timeout "true";
 	message 50ms_tic() @xms_tic "50";
 }
 
