@@ -177,7 +177,7 @@ thing Server includes ClockMsgs,GladiotorsMsgs,GuiMsgs {
 				scores[nextId] = 0
 				shots[nextId] = 0
 				hits[nextId] = 0
-				pongs[nextId] = pongN
+				pongs[nextId] = pingN
 				ips1[nextId] = r.ip1
 				ips2[nextId] = r.ip2
 				ips3[nextId] = r.ip3
