@@ -31,12 +31,14 @@ Gladiotor_C_OnEntry(_instance->Gladiotor_C_State, _instance);
 break;
 case GLADIOTOR_C_GAME_STATE:
 _instance->Gladiotor_C_Game_State = GLADIOTOR_C_GAME_IDENTIFICATION_STATE;
+fprintf(stdout, "Game\n");
 Gladiotor_C_OnEntry(_instance->Gladiotor_C_Game_State, _instance);
 break;
 case GLADIOTOR_C_INIT_STATE:
 fprintf(stdout, "Init\n");
 break;
 case GLADIOTOR_C_GAME_IDENTIFICATION_STATE:
+fprintf(stdout, "Identification\n");
 Gladiotor_send_control_timer_start(_instance, 1, 3000);
 Gladiotor_send_arena_register(_instance, _instance->Gladiotor_ip__var[0]
 , _instance->Gladiotor_ip__var[1]
@@ -78,78 +80,25 @@ default: break;
 }
 
 // Event Handlers for incoming messages:
-void Gladiotor_handle_arena_assignID(struct Gladiotor_Instance *_instance, uint8_t ID, uint8_t ip1, uint8_t ip2, uint8_t ip3, uint8_t ip4) {
+void Gladiotor_handle_control_timeout(struct Gladiotor_Instance *_instance, uint8_t id) {
 uint8_t Gladiotor_C_State_event_consumed = 0;
 if (_instance->Gladiotor_C_State == GLADIOTOR_C_GAME_STATE) {
 uint8_t Gladiotor_C_Game_State_event_consumed = 0;
 if (_instance->Gladiotor_C_Game_State == GLADIOTOR_C_GAME_IDENTIFICATION_STATE) {
 if (Gladiotor_C_Game_State_event_consumed == 0 && 1) {
 Gladiotor_C_OnExit(GLADIOTOR_C_GAME_IDENTIFICATION_STATE, _instance);
-_instance->Gladiotor_C_Game_State = GLADIOTOR_C_GAME_WAIT_STATE;
-fprintf(stdout, "received ID\n");
-_instance->Gladiotor_ID__var = ID;
-Gladiotor_send_control_timer_cancel(_instance, 1);
-Gladiotor_C_OnEntry(GLADIOTOR_C_GAME_WAIT_STATE, _instance);
+_instance->Gladiotor_C_Game_State = GLADIOTOR_C_GAME_IDENTIFICATION_STATE;
+fprintf(stdout, "timeout\n");
+Gladiotor_C_OnEntry(GLADIOTOR_C_GAME_IDENTIFICATION_STATE, _instance);
 Gladiotor_C_Game_State_event_consumed = 1;
 }
 }
-Gladiotor_C_State_event_consumed = 0 | Gladiotor_C_Game_State_event_consumed ;
-}
-}
-void Gladiotor_handle_arena_gameStart(struct Gladiotor_Instance *_instance) {
-uint8_t Gladiotor_C_State_event_consumed = 0;
-if (_instance->Gladiotor_C_State == GLADIOTOR_C_GAME_STATE) {
-uint8_t Gladiotor_C_Game_State_event_consumed = 0;
-if (_instance->Gladiotor_C_Game_State == GLADIOTOR_C_GAME_WAIT_STATE) {
+else if (_instance->Gladiotor_C_Game_State == GLADIOTOR_C_GAME_INACTIVE_STATE) {
 if (Gladiotor_C_Game_State_event_consumed == 0 && 1) {
-Gladiotor_C_OnExit(GLADIOTOR_C_GAME_WAIT_STATE, _instance);
+Gladiotor_C_OnExit(GLADIOTOR_C_GAME_INACTIVE_STATE, _instance);
 _instance->Gladiotor_C_Game_State = GLADIOTOR_C_GAME_ACTIVE_STATE;
+fprintf(stdout, "Active again\n");
 Gladiotor_C_OnEntry(GLADIOTOR_C_GAME_ACTIVE_STATE, _instance);
-Gladiotor_C_Game_State_event_consumed = 1;
-}
-}
-Gladiotor_C_State_event_consumed = 0 | Gladiotor_C_Game_State_event_consumed ;
-}
-}
-void Gladiotor_handle_arena_gameStop(struct Gladiotor_Instance *_instance) {
-uint8_t Gladiotor_C_State_event_consumed = 0;
-if (_instance->Gladiotor_C_State == GLADIOTOR_C_GAME_STATE) {
-uint8_t Gladiotor_C_Game_State_event_consumed = 0;
-Gladiotor_C_State_event_consumed = 0 | Gladiotor_C_Game_State_event_consumed ;
-if (Gladiotor_C_State_event_consumed == 0 && 1) {
-Gladiotor_C_OnExit(GLADIOTOR_C_GAME_STATE, _instance);
-_instance->Gladiotor_C_State = GLADIOTOR_C_GAME_STATE;
-Gladiotor_C_OnEntry(GLADIOTOR_C_GAME_STATE, _instance);
-Gladiotor_C_State_event_consumed = 1;
-}
-}
-}
-void Gladiotor_handle_cmd_shootCmd(struct Gladiotor_Instance *_instance, uint8_t ID) {
-uint8_t Gladiotor_C_State_event_consumed = 0;
-if (_instance->Gladiotor_C_State == GLADIOTOR_C_GAME_STATE) {
-uint8_t Gladiotor_C_Game_State_event_consumed = 0;
-if (_instance->Gladiotor_C_Game_State == GLADIOTOR_C_GAME_ACTIVE_STATE) {
-if (Gladiotor_C_Game_State_event_consumed == 0 && 1) {
-Gladiotor_send_control_shootCmd(_instance, _instance->Gladiotor_ID__var);
-Gladiotor_C_Game_State_event_consumed = 1;
-}
-}
-Gladiotor_C_State_event_consumed = 0 | Gladiotor_C_Game_State_event_consumed ;
-}
-}
-void Gladiotor_handle_control_beenHit(struct Gladiotor_Instance *_instance, uint8_t IDshooter) {
-uint8_t Gladiotor_C_State_event_consumed = 0;
-if (_instance->Gladiotor_C_State == GLADIOTOR_C_GAME_STATE) {
-uint8_t Gladiotor_C_Game_State_event_consumed = 0;
-if (_instance->Gladiotor_C_Game_State == GLADIOTOR_C_GAME_ACTIVE_STATE) {
-if (Gladiotor_C_Game_State_event_consumed == 0 && 1) {
-Gladiotor_C_OnExit(GLADIOTOR_C_GAME_ACTIVE_STATE, _instance);
-_instance->Gladiotor_C_Game_State = GLADIOTOR_C_GAME_INACTIVE_STATE;
-fprintf(stdout, "beenHit\n");
-Gladiotor_send_arena_hitInfo(_instance, _instance->Gladiotor_ID__var, IDshooter);
-Gladiotor_send_cmd_beenHit(_instance, IDshooter);
-Gladiotor_send_control_timer_start(_instance, 1, _instance->Gladiotor_InactiveTime__var);
-Gladiotor_C_OnEntry(GLADIOTOR_C_GAME_INACTIVE_STATE, _instance);
 Gladiotor_C_Game_State_event_consumed = 1;
 }
 }
@@ -176,28 +125,86 @@ if( !((_instance->Gladiotor_ID__var == 0))) {
 Gladiotor_send_arena_unregister(_instance, _instance->Gladiotor_ID__var);
 
 }
+fprintf(stdout, "Reset\n");
 Gladiotor_C_OnEntry(GLADIOTOR_C_GAME_STATE, _instance);
 Gladiotor_C_State_event_consumed = 1;
 }
 }
 }
-void Gladiotor_handle_control_timeout(struct Gladiotor_Instance *_instance, uint8_t id) {
+void Gladiotor_handle_control_beenHit(struct Gladiotor_Instance *_instance, uint8_t IDshooter) {
+uint8_t Gladiotor_C_State_event_consumed = 0;
+if (_instance->Gladiotor_C_State == GLADIOTOR_C_GAME_STATE) {
+uint8_t Gladiotor_C_Game_State_event_consumed = 0;
+if (_instance->Gladiotor_C_Game_State == GLADIOTOR_C_GAME_ACTIVE_STATE) {
+if (Gladiotor_C_Game_State_event_consumed == 0 && 1) {
+Gladiotor_C_OnExit(GLADIOTOR_C_GAME_ACTIVE_STATE, _instance);
+_instance->Gladiotor_C_Game_State = GLADIOTOR_C_GAME_INACTIVE_STATE;
+fprintf(stdout, "beenHit\n");
+Gladiotor_send_arena_hitInfo(_instance, _instance->Gladiotor_ID__var, IDshooter);
+Gladiotor_send_cmd_beenHit(_instance, IDshooter);
+Gladiotor_send_control_timer_start(_instance, 1, _instance->Gladiotor_InactiveTime__var);
+Gladiotor_C_OnEntry(GLADIOTOR_C_GAME_INACTIVE_STATE, _instance);
+Gladiotor_C_Game_State_event_consumed = 1;
+}
+}
+Gladiotor_C_State_event_consumed = 0 | Gladiotor_C_Game_State_event_consumed ;
+}
+}
+void Gladiotor_handle_arena_gameStart(struct Gladiotor_Instance *_instance) {
+uint8_t Gladiotor_C_State_event_consumed = 0;
+if (_instance->Gladiotor_C_State == GLADIOTOR_C_GAME_STATE) {
+uint8_t Gladiotor_C_Game_State_event_consumed = 0;
+if (_instance->Gladiotor_C_Game_State == GLADIOTOR_C_GAME_WAIT_STATE) {
+if (Gladiotor_C_Game_State_event_consumed == 0 && 1) {
+Gladiotor_C_OnExit(GLADIOTOR_C_GAME_WAIT_STATE, _instance);
+_instance->Gladiotor_C_Game_State = GLADIOTOR_C_GAME_ACTIVE_STATE;
+fprintf(stdout, "Game has started\n");
+Gladiotor_C_OnEntry(GLADIOTOR_C_GAME_ACTIVE_STATE, _instance);
+Gladiotor_C_Game_State_event_consumed = 1;
+}
+}
+Gladiotor_C_State_event_consumed = 0 | Gladiotor_C_Game_State_event_consumed ;
+}
+}
+void Gladiotor_handle_arena_gameStop(struct Gladiotor_Instance *_instance) {
+uint8_t Gladiotor_C_State_event_consumed = 0;
+if (_instance->Gladiotor_C_State == GLADIOTOR_C_GAME_STATE) {
+uint8_t Gladiotor_C_Game_State_event_consumed = 0;
+Gladiotor_C_State_event_consumed = 0 | Gladiotor_C_Game_State_event_consumed ;
+if (Gladiotor_C_State_event_consumed == 0 && 1) {
+Gladiotor_C_OnExit(GLADIOTOR_C_GAME_STATE, _instance);
+_instance->Gladiotor_C_State = GLADIOTOR_C_GAME_STATE;
+Gladiotor_C_OnEntry(GLADIOTOR_C_GAME_STATE, _instance);
+Gladiotor_C_State_event_consumed = 1;
+}
+}
+}
+void Gladiotor_handle_arena_assignID(struct Gladiotor_Instance *_instance, uint8_t ID, uint8_t ip1, uint8_t ip2, uint8_t ip3, uint8_t ip4) {
 uint8_t Gladiotor_C_State_event_consumed = 0;
 if (_instance->Gladiotor_C_State == GLADIOTOR_C_GAME_STATE) {
 uint8_t Gladiotor_C_Game_State_event_consumed = 0;
 if (_instance->Gladiotor_C_Game_State == GLADIOTOR_C_GAME_IDENTIFICATION_STATE) {
 if (Gladiotor_C_Game_State_event_consumed == 0 && 1) {
 Gladiotor_C_OnExit(GLADIOTOR_C_GAME_IDENTIFICATION_STATE, _instance);
-_instance->Gladiotor_C_Game_State = GLADIOTOR_C_GAME_IDENTIFICATION_STATE;
-Gladiotor_C_OnEntry(GLADIOTOR_C_GAME_IDENTIFICATION_STATE, _instance);
+_instance->Gladiotor_C_Game_State = GLADIOTOR_C_GAME_WAIT_STATE;
+fprintf(stdout, "received ID\n");
+_instance->Gladiotor_ID__var = ID;
+Gladiotor_send_control_timer_cancel(_instance, 1);
+Gladiotor_C_OnEntry(GLADIOTOR_C_GAME_WAIT_STATE, _instance);
 Gladiotor_C_Game_State_event_consumed = 1;
 }
 }
-else if (_instance->Gladiotor_C_Game_State == GLADIOTOR_C_GAME_INACTIVE_STATE) {
+Gladiotor_C_State_event_consumed = 0 | Gladiotor_C_Game_State_event_consumed ;
+}
+}
+void Gladiotor_handle_cmd_shootCmd(struct Gladiotor_Instance *_instance, uint8_t ID) {
+uint8_t Gladiotor_C_State_event_consumed = 0;
+if (_instance->Gladiotor_C_State == GLADIOTOR_C_GAME_STATE) {
+uint8_t Gladiotor_C_Game_State_event_consumed = 0;
+if (_instance->Gladiotor_C_Game_State == GLADIOTOR_C_GAME_ACTIVE_STATE) {
 if (Gladiotor_C_Game_State_event_consumed == 0 && 1) {
-Gladiotor_C_OnExit(GLADIOTOR_C_GAME_INACTIVE_STATE, _instance);
-_instance->Gladiotor_C_Game_State = GLADIOTOR_C_GAME_ACTIVE_STATE;
-Gladiotor_C_OnEntry(GLADIOTOR_C_GAME_ACTIVE_STATE, _instance);
+Gladiotor_send_control_shootCmd(_instance, _instance->Gladiotor_ID__var);
+fprintf(stdout, "pew pew pew\n");
 Gladiotor_C_Game_State_event_consumed = 1;
 }
 }

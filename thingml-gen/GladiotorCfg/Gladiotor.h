@@ -34,13 +34,13 @@ uint8_t * Gladiotor_ip__var;
 };
 // Declaration of prototypes outgoing messages:
 void Gladiotor_C_OnEntry(int state, struct Gladiotor_Instance *_instance);
-void Gladiotor_handle_arena_assignID(struct Gladiotor_Instance *_instance, uint8_t ID, uint8_t ip1, uint8_t ip2, uint8_t ip3, uint8_t ip4);
+void Gladiotor_handle_control_timeout(struct Gladiotor_Instance *_instance, uint8_t id);
+void Gladiotor_handle_control_ready(struct Gladiotor_Instance *_instance);
+void Gladiotor_handle_control_beenHit(struct Gladiotor_Instance *_instance, uint8_t IDshooter);
 void Gladiotor_handle_arena_gameStart(struct Gladiotor_Instance *_instance);
 void Gladiotor_handle_arena_gameStop(struct Gladiotor_Instance *_instance);
+void Gladiotor_handle_arena_assignID(struct Gladiotor_Instance *_instance, uint8_t ID, uint8_t ip1, uint8_t ip2, uint8_t ip3, uint8_t ip4);
 void Gladiotor_handle_cmd_shootCmd(struct Gladiotor_Instance *_instance, uint8_t ID);
-void Gladiotor_handle_control_beenHit(struct Gladiotor_Instance *_instance, uint8_t IDshooter);
-void Gladiotor_handle_control_ready(struct Gladiotor_Instance *_instance);
-void Gladiotor_handle_control_timeout(struct Gladiotor_Instance *_instance, uint8_t id);
 // Declaration of callbacks for incoming messages:
 void register_Gladiotor_send_cmd_beenHit_listener(void (*_listener)(struct Gladiotor_Instance *, uint8_t));
 void register_external_Gladiotor_send_cmd_beenHit_listener(void (*_listener)(struct Gladiotor_Instance *, uint8_t));

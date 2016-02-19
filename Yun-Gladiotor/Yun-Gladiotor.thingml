@@ -23,14 +23,14 @@ configuration GladiotorCfg
 	set g.ip[2] = 43
 	set g.ip[3] = 101
 
-	connector g.cmd over Serial1
+	connector g.control over Serial1
 	@serial_path_to_device "/dev/ttyATH0"
 	@serial_baudrate "115200"
 
-	connector g.control over Websocket
+	connector g.cmd over Websocket
 	@generate_debugGUI "true"
 
-	connector g.arena over MQTT
+	connector g.arena over MQTT @mqtt_broker_address "10.59.10.3" @mqtt_topic "arena"
 }
 
 
@@ -62,19 +62,21 @@ thing Gladiotor includes GladiotorsMsgs, CmdMsgs, TimerMsgs {
 			transition -> Game event control?ready
 		}
 		composite state Game init Identification {
-			
+			on entry print "Game\n"
 
 			transition -> Game event control?ready
 			action do
 				if(not(ID == 0)) do
 					arena!unregister(ID)
 				end
+				print "Reset\n"
 			end
 
 			transition -> Game event arena?gameStop
 
 			state Identification {
 				on entry do
+					print "Identification\n"
 					control!timer_start(1, 3000)
 					arena!register(ip[0], ip[1], ip[2], ip[3])
 				end
@@ -86,13 +88,17 @@ thing Gladiotor includes GladiotorsMsgs, CmdMsgs, TimerMsgs {
 					control!timer_cancel(1)
 				end
 				transition -> Identification event control?timeout
+				action print "timeout\n"
 			}
 
 			state Wait {
-				transition -> Active event arena?gameStart
+				transition -> Active event arena?gameStart action print "Game has started\n"
 			}
 			state Active {
-				internal event cmd?shootCmd action control!shootCmd(ID)
+				internal event cmd?shootCmd action do
+					control!shootCmd(ID)
+					print "pew pew pew\n"
+				end
 
 				transition -> Inactive event e : control?beenHit
 				action do
@@ -104,6 +110,7 @@ thing Gladiotor includes GladiotorsMsgs, CmdMsgs, TimerMsgs {
 			}
 			state Inactive {
 				transition -> Active event e : control?timeout
+				action print "Active again\n"
 			}
 
 		}
