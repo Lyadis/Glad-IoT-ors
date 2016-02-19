@@ -71,6 +71,8 @@ thing Server includes ClockMsgs,GladiotorsMsgs,GuiMsgs {
 				internal event gui?getGameStatus action do
 					gui!gameStatus(0)
 				end
+				
+				transition -> Playing event gui?gui_gameStart
 			}
 			
 			state Playing {
@@ -102,9 +104,14 @@ thing Server includes ClockMsgs,GladiotorsMsgs,GuiMsgs {
 					timeLeft = 0
 					gui!secondsLeft(0)
 				end			
+
+				transition -> Lounge event gui?gui_gameStop action do
+					timeLeft = 0
+					gui!secondsLeft(0)
+				end
 			
 				internal event gui?getGameStatus action do
-					gui!gameStatus(0)
+					gui!gameStatus(1)
 				end
 				
 				internal event s : arena?shooting action do
