@@ -1,4 +1,4 @@
-*union() {
+union() {
 	translate([-9.5,-10.8,-9])
 	difference() {
 		import_stl("ball_and_socket.stl",convexity=10);
@@ -9,7 +9,7 @@
 	cube([40,20,2], center=true);
 }
 
-translate([-9.5,10.8,13])
+*translate([-9.5,10.8,13])
 rotate([180,0,0])
 difference() {
 	import_stl("ball_and_socket.stl",convexity=10);
