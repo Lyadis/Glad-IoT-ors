@@ -1,0 +1,76 @@
+html {
+  height: 100%;
+  padding: 0;
+  margin: 0;
+}
+body {
+  background-color: black;
+  font-family: sans-serif;
+  color: white;
+  padding: 0;
+  margin: 0;
+  text-align: center;
+}
+h1 {
+  text-align: center;
+}
+
+#hit {
+  background-color: red;
+  position: absolute;
+  top: 0; right: 0; bottom: 0; left: 0;
+}
+#hit div {
+  display: table;
+  height: 100%;
+  width: 100%;
+}
+#hit div div {
+  display: table-cell;
+  vertical-align: middle;
+  text-align: center;
+  font-size: 200px;
+  animation: flashing .5s infinite;
+}
+
+#buttons div.header span {
+  background-color: red;
+}
+#buttons div.points div {
+  text-align: center;
+  display: inline-block;
+  width: 49%;
+  font-size: 30px;
+}
+#buttons div.points div span#score {
+  color: lightgreen;
+}
+#buttons div.points div span#hits {
+  color: lightcoral;
+}
+#buttons div.bottom {
+  display: table;
+  margin: auto;
+  margin-top: 40px;
+}
+#buttons #button {
+  display: table-cell;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background-color: red;
+  vertical-align: middle;
+  text-align: center;
+  font-size: 60px
+}
+
+@keyframes flashing {
+  0%   { opacity: 0; }
+  20%  { opacity: 1; }
+  50%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+div#teamchooser { display: none; }
+div#buttons { display: none; }
+div#hit { display: none; }
