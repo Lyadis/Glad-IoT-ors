@@ -87,13 +87,13 @@ thing Server includes ClockMsgs,GladiotorsMsgs,GuiMsgs {
 				end
 				
 				internal event s : arena?shooting action do
-					shots[s.ID] ++
+					shots[s.ID] = shots[s.ID] + 1 
 					// TODO: Handle misses and double-hits
 					sendTeamStatus(s.ID)
 				end
 				
 				internal event h : arena?hitInfo action do
-					hits[h.ID] ++
+					hits[h.ID] = hits[h.ID] + 1
 					// TODO: Handle misses and double-hits
 					sendTeamStatus(h.ID)
 				end
