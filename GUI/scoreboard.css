@@ -1,0 +1,31 @@
+body {
+  background-color: black;
+  color: white;
+  font-family: sans-serif;
+  text-align: center;
+}
+
+h1 {
+  font-size: 50px;
+}
+
+div.header div {
+  text-align: left;
+  display: inline-block;
+  width: 49%;
+  font-size: 40px
+}
+
+div#teamlist {
+  display: table;
+  width: 100%;
+}
+
+div#teamlist div.team {
+  display: table-cell;
+  height: 200px;
+  width: 49%;
+  background-color: #222;
+  border-spacing: 10px;
+  border-collapse: separate;
+}
