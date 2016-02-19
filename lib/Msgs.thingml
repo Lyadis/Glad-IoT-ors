@@ -2,15 +2,15 @@ import "_Datatypes.thingml"
 
 thing fragment GladiotorsMsgs {
 
-	message register() @code "100";
-	message assignID(ID : UInt8) @code "101";
+	message register(ip1:UInt8, ip2:UInt8, ip3:UInt8, ip4:UInt8) @code "100";
+	message assignID(ID : UInt8, ip1:UInt8, ip2:UInt8, ip3:UInt8, ip4:UInt8) @code "101";
 	message unregister(ID : UInt8) @code "102";
 
 	message gameStart() @code "103";
 	message gameStop() @code "104";
 
 	message shooting(ID : UInt8, time0 : UInt8, time1 : UInt8) @code "1";
-	message hitInfo(ID : UInt8, IDshutter : UInt8) @code "2";
+	message hitInfo(ID : UInt8, IDshooter : UInt8) @code "2";
 }
 
 thing fragment CmdMsgs {
@@ -24,4 +24,14 @@ thing fragment TimerMsgs {
 	message timer_cancel(id : UInt8) @timer_cancel "true";
 	message timeout(id : UInt8) @timeout "true";
 	message 50ms_tic() @xms_tic "50";
+}
+
+thing fragment GuiMsgs {
+	message gameStart();
+	message gameStop();
+	message listStatuses();
+	message getGameStatus();
+	message gameStatus(playing : Boolean);
+	message secondsLeft(secs : UInt16);
+	message teamStatus(ID : Uint8, registered : Boolean, score : Int16, shots : Int16, hits : Int16, ip1:UInt8, ip2:UInt8, ip3:UInt8, ip4:UInt8);
 }

@@ -23,7 +23,7 @@ datatype UInt64<8>
 	@c_type "uint64_t";
 
 datatype Int8<1>	
-	@c_type "uint8_t";
+	@c_type "int8_t";
 	
 datatype Int16<2>	
 	@c_type "int16_t";

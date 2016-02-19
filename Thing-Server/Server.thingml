@@ -1,0 +1,140 @@
+import "../lib/Msgs.thingml"
+import "Clock.thingml"
+
+thing Server includes ClockMsgs,GladiotorsMsgs,GuiMsgs {
+	
+	property nextId : UInt8 = 1
+	property registered : Boolean[256]
+	property scores : Int16[256]
+	property shots : Int16[256]
+	property hits : Int16[256]
+	
+	property ips1 : UInt8[256]
+	property ips2 : UInt8[256]
+	property ips3 : UInt8[256]
+	property ips4 : UInt8[256]
+	
+	property playTime : UInt16 = 300
+	property timeLeft : UInt16 = 0
+
+	required port arena {
+		receives register, unregister, shooting, hitInfo
+		sends assignID, gameStart, gameStop
+	}
+	provided port gui {
+		receives gameStart, gameStop, getGameStatus, listStatuses
+		sends gameStatus, secondsLeft, teamStatus
+	}
+	required port clock {
+		receives clock_tick
+	}
+	
+	function sendTeamStatus(ID : UInt8) do
+		gui!teamStatus(ID, registered[ID], scores[ID], shots[ID], hits[ID], ips1[ID],ips2[ID],ips3[ID],ips4[ID])
+	end
+	
+	statechart S init Init {
+		state Init {
+			on entry print "Init server\n"
+			transition -> Running
+		}
+		
+		composite state Running init Lounge {
+			state Lounge {
+				on entry do
+					gui!gameStatus(0)
+					gui!secondsLeft(playTime)
+					arena!gameStop()
+				end
+				
+				internal event gui?getGameStatus action do
+					gui!gameStatus(0)
+				end
+			}
+			
+			state Playing {
+				on entry do
+					var n : UInt8 = 1
+					while (n < nextId) do
+						if (registered[n] == 1) do
+							scores[n] = 0
+							shots[n] = 0
+							hits[n] = 0						
+							sendTeamStatus(n)
+						end
+						n++
+					end
+				
+					gui!gameStatus(1)
+					gui!secondsLeft(playTime)
+					arena!gameStart()
+					
+					timeLeft = playTime
+				end
+				
+				internal event clock?clock_tick guard (timeLeft > 1) action do
+					timeLeft --
+					gui!secondsLeft(timeLeft)
+				end
+				
+				transition -> Lounge event clock?clock_tick guard (timeLeft == 1) action do
+					timeLeft = 0
+					gui!secondsLeft(0)
+				end			
+			
+				internal event gui?getGameStatus action do
+					gui!gameStatus(0)
+				end
+				
+				internal event s : arena?shooting action do
+					shots[s.ID] ++
+					// TODO: Handle misses and double-hits
+					sendTeamStatus(s.ID)
+				end
+				
+				internal event h : arena?hitInfo action do
+					hits[h.ID] ++
+					// TODO: Handle misses and double-hits
+					sendTeamStatus(h.ID)
+				end
+			}
+		
+			internal event r : arena?register action do
+				registered[nextId] = 1
+				scores[nextId] = 0
+				shots[nextId] = 0
+				hits[nextId] = 0
+				ips1[nextId] = r.ip1
+				ips2[nextId] = r.ip2
+				ips3[nextId] = r.ip3
+				ips4[nextId] = r.ip4
+				
+				arena!assignID(nextId)
+				sendTeamStatus(nextId)
+				nextId++
+			end
+			
+			internal event u : arena?unregister action do
+				registered[u.ID] = 0
+				scores[u.ID] = 0
+				shots[u.ID] = 0
+				hits[u.ID] = 0
+				ips1[u.ID] = 0
+				ips2[u.ID] = 0
+				ips3[u.ID] = 0
+				ips4[u.ID] = 0
+				sendTeamStatus(u.ID)
+			end
+			
+			internal event gui?listStatuses action do
+				var n : UInt8 = 1
+				while (n < nextId) do
+					if (registered[n] == 1) do
+						sendTeamStatus(n)
+					end
+					n++
+				end
+			end
+		}
+	}
+}
