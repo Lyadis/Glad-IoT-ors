@@ -67,7 +67,7 @@
 /* Define to 1 if you have the `fork' function. */
 #define HAVE_FORK
 
-/* Define to 1 if you have the `getenv??? function. */
+/* Define to 1 if you have the `getenv’ function. */
 #define HAVE_GETENV
 
 /* Define to 1 if you have the <in6addr.h> header file. */

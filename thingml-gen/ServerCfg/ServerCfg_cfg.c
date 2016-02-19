@@ -60,27 +60,9 @@ fifo_unlock_and_notify();
 
 
 //New dispatcher for messages
-void dispatch_register(uint16_t sender, uint8_t param_ip1, uint8_t param_ip2, uint8_t param_ip3, uint8_t param_ip4) {
-if (sender == MQTT_instance.listener_id) {
-Server_handle_arena_register(&s_var, param_ip1, param_ip2, param_ip3, param_ip4);
-
-}
-
-}
-
-
-//New dispatcher for messages
-void dispatch_gui_gameStart(uint16_t sender) {
-if (sender == Websocket_instance.listener_id) {
-
-}
-
-}
-
-
-//New dispatcher for messages
 void dispatch_gui_gameStop(uint16_t sender) {
 if (sender == Websocket_instance.listener_id) {
+Server_handle_gui_gui_gameStop(&s_var);
 
 }
 
@@ -88,9 +70,9 @@ if (sender == Websocket_instance.listener_id) {
 
 
 //New dispatcher for messages
-void dispatch_unregister(uint16_t sender, uint8_t param_ID) {
-if (sender == MQTT_instance.listener_id) {
-Server_handle_arena_unregister(&s_var, param_ID);
+void dispatch_listStatuses(uint16_t sender) {
+if (sender == Websocket_instance.listener_id) {
+Server_handle_gui_listStatuses(&s_var);
 
 }
 
@@ -108,9 +90,9 @@ Server_handle_clock_clock_tick(&s_var);
 
 
 //New dispatcher for messages
-void dispatch_getGameStatus(uint16_t sender) {
-if (sender == Websocket_instance.listener_id) {
-Server_handle_gui_getGameStatus(&s_var);
+void dispatch_unregister(uint16_t sender, uint8_t param_ID) {
+if (sender == MQTT_instance.listener_id) {
+Server_handle_arena_unregister(&s_var, param_ID);
 
 }
 
@@ -128,9 +110,9 @@ Server_handle_arena_shooting(&s_var, param_ID, param_time0, param_time1);
 
 
 //New dispatcher for messages
-void dispatch_hitInfo(uint16_t sender, uint8_t param_ID, uint8_t param_IDshooter) {
-if (sender == MQTT_instance.listener_id) {
-Server_handle_arena_hitInfo(&s_var, param_ID, param_IDshooter);
+void dispatch_getGameStatus(uint16_t sender) {
+if (sender == Websocket_instance.listener_id) {
+Server_handle_gui_getGameStatus(&s_var);
 
 }
 
@@ -138,9 +120,29 @@ Server_handle_arena_hitInfo(&s_var, param_ID, param_IDshooter);
 
 
 //New dispatcher for messages
-void dispatch_listStatuses(uint16_t sender) {
+void dispatch_register(uint16_t sender, uint8_t param_ip1, uint8_t param_ip2, uint8_t param_ip3, uint8_t param_ip4) {
+if (sender == MQTT_instance.listener_id) {
+Server_handle_arena_register(&s_var, param_ip1, param_ip2, param_ip3, param_ip4);
+
+}
+
+}
+
+
+//New dispatcher for messages
+void dispatch_gui_gameStart(uint16_t sender) {
 if (sender == Websocket_instance.listener_id) {
-Server_handle_gui_listStatuses(&s_var);
+Server_handle_gui_gui_gameStart(&s_var);
+
+}
+
+}
+
+
+//New dispatcher for messages
+void dispatch_hitInfo(uint16_t sender, uint8_t param_ID, uint8_t param_IDshooter) {
+if (sender == MQTT_instance.listener_id) {
+Server_handle_arena_hitInfo(&s_var, param_ID, param_IDshooter);
 
 }
 
@@ -160,6 +162,72 @@ code += fifo_dequeue();
 
 // Switch to call the appropriate handler
 switch(code) {
+case 2:
+while (mbufi < 4) mbuf[mbufi++] = fifo_dequeue();
+fifo_unlock();
+union u_hitInfo_ID_t {
+uint8_t p;
+byte bytebuffer[1];
+} u_hitInfo_ID;
+u_hitInfo_ID.bytebuffer[0] = mbuf[2];
+union u_hitInfo_IDshooter_t {
+uint8_t p;
+byte bytebuffer[1];
+} u_hitInfo_IDshooter;
+u_hitInfo_IDshooter.bytebuffer[0] = mbuf[3];
+dispatch_hitInfo((mbuf[0] << 8) + mbuf[1] /* instance port*/,
+ u_hitInfo_ID.p /* ID */ ,
+ u_hitInfo_IDshooter.p /* IDshooter */ );
+break;
+case 151:
+while (mbufi < 2) mbuf[mbufi++] = fifo_dequeue();
+fifo_unlock();
+dispatch_gui_gameStop((mbuf[0] << 8) + mbuf[1] /* instance port*/);
+break;
+case 152:
+while (mbufi < 2) mbuf[mbufi++] = fifo_dequeue();
+fifo_unlock();
+dispatch_listStatuses((mbuf[0] << 8) + mbuf[1] /* instance port*/);
+break;
+case 3:
+while (mbufi < 2) mbuf[mbufi++] = fifo_dequeue();
+fifo_unlock();
+dispatch_clock_tick((mbuf[0] << 8) + mbuf[1] /* instance port*/);
+break;
+case 102:
+while (mbufi < 3) mbuf[mbufi++] = fifo_dequeue();
+fifo_unlock();
+union u_unregister_ID_t {
+uint8_t p;
+byte bytebuffer[1];
+} u_unregister_ID;
+u_unregister_ID.bytebuffer[0] = mbuf[2];
+dispatch_unregister((mbuf[0] << 8) + mbuf[1] /* instance port*/,
+ u_unregister_ID.p /* ID */ );
+break;
+case 1:
+while (mbufi < 5) mbuf[mbufi++] = fifo_dequeue();
+fifo_unlock();
+union u_shooting_ID_t {
+uint8_t p;
+byte bytebuffer[1];
+} u_shooting_ID;
+u_shooting_ID.bytebuffer[0] = mbuf[2];
+union u_shooting_time0_t {
+uint8_t p;
+byte bytebuffer[1];
+} u_shooting_time0;
+u_shooting_time0.bytebuffer[0] = mbuf[3];
+union u_shooting_time1_t {
+uint8_t p;
+byte bytebuffer[1];
+} u_shooting_time1;
+u_shooting_time1.bytebuffer[0] = mbuf[4];
+dispatch_shooting((mbuf[0] << 8) + mbuf[1] /* instance port*/,
+ u_shooting_ID.p /* ID */ ,
+ u_shooting_time0.p /* time0 */ ,
+ u_shooting_time1.p /* time1 */ );
+break;
 case 153:
 while (mbufi < 2) mbuf[mbufi++] = fifo_dequeue();
 fifo_unlock();
@@ -198,72 +266,6 @@ case 150:
 while (mbufi < 2) mbuf[mbufi++] = fifo_dequeue();
 fifo_unlock();
 dispatch_gui_gameStart((mbuf[0] << 8) + mbuf[1] /* instance port*/);
-break;
-case 151:
-while (mbufi < 2) mbuf[mbufi++] = fifo_dequeue();
-fifo_unlock();
-dispatch_gui_gameStop((mbuf[0] << 8) + mbuf[1] /* instance port*/);
-break;
-case 1:
-while (mbufi < 5) mbuf[mbufi++] = fifo_dequeue();
-fifo_unlock();
-union u_shooting_ID_t {
-uint8_t p;
-byte bytebuffer[1];
-} u_shooting_ID;
-u_shooting_ID.bytebuffer[0] = mbuf[2];
-union u_shooting_time0_t {
-uint8_t p;
-byte bytebuffer[1];
-} u_shooting_time0;
-u_shooting_time0.bytebuffer[0] = mbuf[3];
-union u_shooting_time1_t {
-uint8_t p;
-byte bytebuffer[1];
-} u_shooting_time1;
-u_shooting_time1.bytebuffer[0] = mbuf[4];
-dispatch_shooting((mbuf[0] << 8) + mbuf[1] /* instance port*/,
- u_shooting_ID.p /* ID */ ,
- u_shooting_time0.p /* time0 */ ,
- u_shooting_time1.p /* time1 */ );
-break;
-case 102:
-while (mbufi < 3) mbuf[mbufi++] = fifo_dequeue();
-fifo_unlock();
-union u_unregister_ID_t {
-uint8_t p;
-byte bytebuffer[1];
-} u_unregister_ID;
-u_unregister_ID.bytebuffer[0] = mbuf[2];
-dispatch_unregister((mbuf[0] << 8) + mbuf[1] /* instance port*/,
- u_unregister_ID.p /* ID */ );
-break;
-case 2:
-while (mbufi < 4) mbuf[mbufi++] = fifo_dequeue();
-fifo_unlock();
-union u_hitInfo_ID_t {
-uint8_t p;
-byte bytebuffer[1];
-} u_hitInfo_ID;
-u_hitInfo_ID.bytebuffer[0] = mbuf[2];
-union u_hitInfo_IDshooter_t {
-uint8_t p;
-byte bytebuffer[1];
-} u_hitInfo_IDshooter;
-u_hitInfo_IDshooter.bytebuffer[0] = mbuf[3];
-dispatch_hitInfo((mbuf[0] << 8) + mbuf[1] /* instance port*/,
- u_hitInfo_ID.p /* ID */ ,
- u_hitInfo_IDshooter.p /* IDshooter */ );
-break;
-case 3:
-while (mbufi < 2) mbuf[mbufi++] = fifo_dequeue();
-fifo_unlock();
-dispatch_clock_tick((mbuf[0] << 8) + mbuf[1] /* instance port*/);
-break;
-case 152:
-while (mbufi < 2) mbuf[mbufi++] = fifo_dequeue();
-fifo_unlock();
-dispatch_listStatuses((mbuf[0] << 8) + mbuf[1] /* instance port*/);
 break;
 }
 return 1;
@@ -461,14 +463,19 @@ sprintf((unsigned char *) &forward_buf[3], "%03i", (unsigned char) (104 & 0xFF))
 MQTT_forwardMessage(forward_buf, 7);
 }
 
+void forward_Server_send_arena_assignID(struct Server_Instance *_instance, uint8_t ID, uint8_t ip1, uint8_t ip2, uint8_t ip3, uint8_t ip4){
+if(_instance->id_arena == s_var.id_arena) {
+forward_MQTT_Server_send_arena_assignID(_instance, ID, ip1, ip2, ip3, ip4);
+}
+}
 void forward_Server_send_arena_gameStop(struct Server_Instance *_instance){
 if(_instance->id_arena == s_var.id_arena) {
 forward_MQTT_Server_send_arena_gameStop(_instance);
 }
 }
-void forward_Server_send_arena_assignID(struct Server_Instance *_instance, uint8_t ID, uint8_t ip1, uint8_t ip2, uint8_t ip3, uint8_t ip4){
-if(_instance->id_arena == s_var.id_arena) {
-forward_MQTT_Server_send_arena_assignID(_instance, ID, ip1, ip2, ip3, ip4);
+void forward_Server_send_gui_secondsLeft(struct Server_Instance *_instance, uint16_t secs){
+if(_instance->id_gui == s_var.id_gui) {
+forward_Websocket_Server_send_gui_secondsLeft(_instance, secs);
 }
 }
 void forward_Server_send_gui_gameStatus(struct Server_Instance *_instance, uint8_t playing){
@@ -476,19 +483,14 @@ if(_instance->id_gui == s_var.id_gui) {
 forward_Websocket_Server_send_gui_gameStatus(_instance, playing);
 }
 }
-void forward_Server_send_arena_gameStart(struct Server_Instance *_instance){
-if(_instance->id_arena == s_var.id_arena) {
-forward_MQTT_Server_send_arena_gameStart(_instance);
-}
-}
 void forward_Server_send_gui_teamStatus(struct Server_Instance *_instance, uint8_t ID, uint8_t registered, int16_t score, int16_t shots, int16_t hits, uint8_t ip1, uint8_t ip2, uint8_t ip3, uint8_t ip4){
 if(_instance->id_gui == s_var.id_gui) {
 forward_Websocket_Server_send_gui_teamStatus(_instance, ID, registered, score, shots, hits, ip1, ip2, ip3, ip4);
 }
 }
-void forward_Server_send_gui_secondsLeft(struct Server_Instance *_instance, uint16_t secs){
-if(_instance->id_gui == s_var.id_gui) {
-forward_Websocket_Server_send_gui_secondsLeft(_instance, secs);
+void forward_Server_send_arena_gameStart(struct Server_Instance *_instance){
+if(_instance->id_arena == s_var.id_arena) {
+forward_MQTT_Server_send_arena_gameStart(_instance);
 }
 }
 
@@ -497,6 +499,26 @@ void externalMessageEnqueue(uint8_t * msg, uint8_t msgSize, uint16_t listener_id
 if ((msgSize >= 2) && (msg != NULL)) {
 uint8_t msgSizeOK = 0;
 switch(msg[0] * 256 + msg[1]) {
+case 2:
+if(msgSize == 4) {
+msgSizeOK = 1;}
+break;
+case 151:
+if(msgSize == 2) {
+msgSizeOK = 1;}
+break;
+case 152:
+if(msgSize == 2) {
+msgSizeOK = 1;}
+break;
+case 102:
+if(msgSize == 3) {
+msgSizeOK = 1;}
+break;
+case 1:
+if(msgSize == 5) {
+msgSizeOK = 1;}
+break;
 case 153:
 if(msgSize == 2) {
 msgSizeOK = 1;}
@@ -506,26 +528,6 @@ if(msgSize == 6) {
 msgSizeOK = 1;}
 break;
 case 150:
-if(msgSize == 2) {
-msgSizeOK = 1;}
-break;
-case 151:
-if(msgSize == 2) {
-msgSizeOK = 1;}
-break;
-case 1:
-if(msgSize == 5) {
-msgSizeOK = 1;}
-break;
-case 102:
-if(msgSize == 3) {
-msgSizeOK = 1;}
-break;
-case 2:
-if(msgSize == 4) {
-msgSizeOK = 1;}
-break;
-case 152:
 if(msgSize == 2) {
 msgSizeOK = 1;}
 break;

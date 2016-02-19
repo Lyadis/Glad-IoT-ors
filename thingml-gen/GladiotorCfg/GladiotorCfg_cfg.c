@@ -36,29 +36,9 @@ struct Gladiotor_Instance g_var;
 
 
 //New dispatcher for messages
-void dispatch_timeout(uint16_t sender, uint8_t param_id) {
-if (sender == Serial1_instance.listener_id) {
-Gladiotor_handle_control_timeout(&g_var, param_id);
-
-}
-
-}
-
-
-//New dispatcher for messages
-void dispatch_gameStop(uint16_t sender) {
+void dispatch_gameStart(uint16_t sender) {
 if (sender == MQTT_instance.listener_id) {
-Gladiotor_handle_arena_gameStop(&g_var);
-
-}
-
-}
-
-
-//New dispatcher for messages
-void dispatch_assignID(uint16_t sender, uint8_t param_ID, uint8_t param_ip1, uint8_t param_ip2, uint8_t param_ip3, uint8_t param_ip4) {
-if (sender == MQTT_instance.listener_id) {
-Gladiotor_handle_arena_assignID(&g_var, param_ID, param_ip1, param_ip2, param_ip3, param_ip4);
+Gladiotor_handle_arena_gameStart(&g_var);
 
 }
 
@@ -76,16 +56,6 @@ Gladiotor_handle_cmd_shootCmd(&g_var, param_ID);
 
 
 //New dispatcher for messages
-void dispatch_gameStart(uint16_t sender) {
-if (sender == MQTT_instance.listener_id) {
-Gladiotor_handle_arena_gameStart(&g_var);
-
-}
-
-}
-
-
-//New dispatcher for messages
 void dispatch_ready(uint16_t sender) {
 if (sender == Serial1_instance.listener_id) {
 Gladiotor_handle_control_ready(&g_var);
@@ -96,9 +66,29 @@ Gladiotor_handle_control_ready(&g_var);
 
 
 //New dispatcher for messages
+void dispatch_assignID(uint16_t sender, uint8_t param_ID, uint8_t param_ip1, uint8_t param_ip2, uint8_t param_ip3, uint8_t param_ip4) {
+if (sender == MQTT_instance.listener_id) {
+Gladiotor_handle_arena_assignID(&g_var, param_ID, param_ip1, param_ip2, param_ip3, param_ip4);
+
+}
+
+}
+
+
+//New dispatcher for messages
 void dispatch_beenHit(uint16_t sender, uint8_t param_IDshooter) {
 if (sender == Serial1_instance.listener_id) {
 Gladiotor_handle_control_beenHit(&g_var, param_IDshooter);
+
+}
+
+}
+
+
+//New dispatcher for messages
+void dispatch_gameStop(uint16_t sender) {
+if (sender == MQTT_instance.listener_id) {
+Gladiotor_handle_arena_gameStop(&g_var);
 
 }
 
@@ -118,43 +108,6 @@ code += fifo_dequeue();
 
 // Switch to call the appropriate handler
 switch(code) {
-case 192:
-while (mbufi < 3) mbuf[mbufi++] = fifo_dequeue();
-fifo_unlock();
-union u_timeout_id_t {
-uint8_t p;
-byte bytebuffer[1];
-} u_timeout_id;
-u_timeout_id.bytebuffer[0] = mbuf[2];
-dispatch_timeout((mbuf[0] << 8) + mbuf[1] /* instance port*/,
- u_timeout_id.p /* id */ );
-break;
-case 103:
-while (mbufi < 2) mbuf[mbufi++] = fifo_dequeue();
-fifo_unlock();
-dispatch_gameStart((mbuf[0] << 8) + mbuf[1] /* instance port*/);
-break;
-case 104:
-while (mbufi < 2) mbuf[mbufi++] = fifo_dequeue();
-fifo_unlock();
-dispatch_gameStop((mbuf[0] << 8) + mbuf[1] /* instance port*/);
-break;
-case 200:
-while (mbufi < 2) mbuf[mbufi++] = fifo_dequeue();
-fifo_unlock();
-dispatch_ready((mbuf[0] << 8) + mbuf[1] /* instance port*/);
-break;
-case 201:
-while (mbufi < 3) mbuf[mbufi++] = fifo_dequeue();
-fifo_unlock();
-union u_shootCmd_ID_t {
-uint8_t p;
-byte bytebuffer[1];
-} u_shootCmd_ID;
-u_shootCmd_ID.bytebuffer[0] = mbuf[2];
-dispatch_shootCmd((mbuf[0] << 8) + mbuf[1] /* instance port*/,
- u_shootCmd_ID.p /* ID */ );
-break;
 case 101:
 while (mbufi < 7) mbuf[mbufi++] = fifo_dequeue();
 fifo_unlock();
@@ -190,6 +143,22 @@ dispatch_assignID((mbuf[0] << 8) + mbuf[1] /* instance port*/,
  u_assignID_ip3.p /* ip3 */ ,
  u_assignID_ip4.p /* ip4 */ );
 break;
+case 103:
+while (mbufi < 2) mbuf[mbufi++] = fifo_dequeue();
+fifo_unlock();
+dispatch_gameStart((mbuf[0] << 8) + mbuf[1] /* instance port*/);
+break;
+case 201:
+while (mbufi < 3) mbuf[mbufi++] = fifo_dequeue();
+fifo_unlock();
+union u_shootCmd_ID_t {
+uint8_t p;
+byte bytebuffer[1];
+} u_shootCmd_ID;
+u_shootCmd_ID.bytebuffer[0] = mbuf[2];
+dispatch_shootCmd((mbuf[0] << 8) + mbuf[1] /* instance port*/,
+ u_shootCmd_ID.p /* ID */ );
+break;
 case 202:
 while (mbufi < 3) mbuf[mbufi++] = fifo_dequeue();
 fifo_unlock();
@@ -201,8 +170,55 @@ u_beenHit_IDshooter.bytebuffer[0] = mbuf[2];
 dispatch_beenHit((mbuf[0] << 8) + mbuf[1] /* instance port*/,
  u_beenHit_IDshooter.p /* IDshooter */ );
 break;
+case 104:
+while (mbufi < 2) mbuf[mbufi++] = fifo_dequeue();
+fifo_unlock();
+dispatch_gameStop((mbuf[0] << 8) + mbuf[1] /* instance port*/);
+break;
+case 200:
+while (mbufi < 2) mbuf[mbufi++] = fifo_dequeue();
+fifo_unlock();
+dispatch_ready((mbuf[0] << 8) + mbuf[1] /* instance port*/);
+break;
 }
 return 1;
+}
+
+// Forwarding of messages Serial1::Gladiotor::control::shootCmd
+void forward_Serial1_Gladiotor_send_control_shootCmd(struct Gladiotor_Instance *_instance, uint8_t ID){
+byte forward_buf[3];
+forward_buf[0] = (201 >> 8) & 0xFF;
+forward_buf[1] =  201 & 0xFF;
+
+
+// parameter ID
+union u_ID_t {
+uint8_t p;
+byte bytebuffer[1];
+} u_ID;
+u_ID.p = ID;
+forward_buf[2] =  (u_ID.bytebuffer[0] & 0xFF);
+
+//Forwarding with specified function 
+Serial1_forwardMessage(forward_buf, 3);
+}
+
+// Forwarding of messages Websocket::Gladiotor::cmd::beenHit
+void forward_Websocket_Gladiotor_send_cmd_beenHit(struct Gladiotor_Instance *_instance, uint8_t IDshooter){
+byte forward_buf[10];
+sprintf((unsigned char *) &forward_buf[0], "%03i", (unsigned char) ((202 >> 8) & 0xFF));
+sprintf((unsigned char *) &forward_buf[3], "%03i", (unsigned char) (202 & 0xFF));
+
+// parameter IDshooter
+union u_IDshooter_t {
+uint8_t p;
+byte bytebuffer[1];
+} u_IDshooter;
+u_IDshooter.p = IDshooter;
+sprintf((unsigned char *) &forward_buf[6], "%03i", (unsigned char) (u_IDshooter.bytebuffer[0] & 0xFF));
+
+//Forwarding with specified function 
+Websocket_forwardMessage(forward_buf, 10);
 }
 
 // Forwarding of messages MQTT::Gladiotor::arena::register
@@ -325,120 +341,9 @@ sprintf((unsigned char *) &forward_buf[9], "%03i", (unsigned char) (u_IDshooter.
 MQTT_forwardMessage(forward_buf, 13);
 }
 
-// Forwarding of messages Websocket::Gladiotor::cmd::beenHit
-void forward_Websocket_Gladiotor_send_cmd_beenHit(struct Gladiotor_Instance *_instance, uint8_t IDshooter){
-byte forward_buf[10];
-sprintf((unsigned char *) &forward_buf[0], "%03i", (unsigned char) ((202 >> 8) & 0xFF));
-sprintf((unsigned char *) &forward_buf[3], "%03i", (unsigned char) (202 & 0xFF));
-
-// parameter IDshooter
-union u_IDshooter_t {
-uint8_t p;
-byte bytebuffer[1];
-} u_IDshooter;
-u_IDshooter.p = IDshooter;
-sprintf((unsigned char *) &forward_buf[6], "%03i", (unsigned char) (u_IDshooter.bytebuffer[0] & 0xFF));
-
-//Forwarding with specified function 
-Websocket_forwardMessage(forward_buf, 10);
-}
-
-// Forwarding of messages Serial1::Gladiotor::control::shootCmd
-void forward_Serial1_Gladiotor_send_control_shootCmd(struct Gladiotor_Instance *_instance, uint8_t ID){
-byte forward_buf[3];
-forward_buf[0] = (201 >> 8) & 0xFF;
-forward_buf[1] =  201 & 0xFF;
-
-
-// parameter ID
-union u_ID_t {
-uint8_t p;
-byte bytebuffer[1];
-} u_ID;
-u_ID.p = ID;
-forward_buf[2] =  (u_ID.bytebuffer[0] & 0xFF);
-
-//Forwarding with specified function 
-Serial1_forwardMessage(forward_buf, 3);
-}
-
-// Forwarding of messages Serial1::Gladiotor::control::timer_start
-void forward_Serial1_Gladiotor_send_control_timer_start(struct Gladiotor_Instance *_instance, uint8_t id, uint32_t time){
-byte forward_buf[7];
-forward_buf[0] = (190 >> 8) & 0xFF;
-forward_buf[1] =  190 & 0xFF;
-
-
-// parameter id
-union u_id_t {
-uint8_t p;
-byte bytebuffer[1];
-} u_id;
-u_id.p = id;
-forward_buf[2] =  (u_id.bytebuffer[0] & 0xFF);
-
-// parameter time
-union u_time_t {
-uint32_t p;
-byte bytebuffer[4];
-} u_time;
-u_time.p = time;
-forward_buf[3] =  (u_time.bytebuffer[3] & 0xFF);
-forward_buf[4] =  (u_time.bytebuffer[2] & 0xFF);
-forward_buf[5] =  (u_time.bytebuffer[1] & 0xFF);
-forward_buf[6] =  (u_time.bytebuffer[0] & 0xFF);
-
-//Forwarding with specified function 
-Serial1_forwardMessage(forward_buf, 7);
-}
-
-// Forwarding of messages Serial1::Gladiotor::control::timer_cancel
-void forward_Serial1_Gladiotor_send_control_timer_cancel(struct Gladiotor_Instance *_instance, uint8_t id){
-byte forward_buf[3];
-forward_buf[0] = (191 >> 8) & 0xFF;
-forward_buf[1] =  191 & 0xFF;
-
-
-// parameter id
-union u_id_t {
-uint8_t p;
-byte bytebuffer[1];
-} u_id;
-u_id.p = id;
-forward_buf[2] =  (u_id.bytebuffer[0] & 0xFF);
-
-//Forwarding with specified function 
-Serial1_forwardMessage(forward_buf, 3);
-}
-
-void forward_Gladiotor_send_arena_shooting(struct Gladiotor_Instance *_instance, uint8_t ID, uint8_t time0, uint8_t time1){
-if(_instance->id_arena == g_var.id_arena) {
-forward_MQTT_Gladiotor_send_arena_shooting(_instance, ID, time0, time1);
-}
-}
-void forward_Gladiotor_send_arena_unregister(struct Gladiotor_Instance *_instance, uint8_t ID){
-if(_instance->id_arena == g_var.id_arena) {
-forward_MQTT_Gladiotor_send_arena_unregister(_instance, ID);
-}
-}
-void forward_Gladiotor_send_control_timer_start(struct Gladiotor_Instance *_instance, uint8_t id, uint32_t time){
-if(_instance->id_control == g_var.id_control) {
-forward_Serial1_Gladiotor_send_control_timer_start(_instance, id, time);
-}
-}
 void forward_Gladiotor_send_arena_register(struct Gladiotor_Instance *_instance, uint8_t ip1, uint8_t ip2, uint8_t ip3, uint8_t ip4){
 if(_instance->id_arena == g_var.id_arena) {
 forward_MQTT_Gladiotor_send_arena_register(_instance, ip1, ip2, ip3, ip4);
-}
-}
-void forward_Gladiotor_send_control_timer_cancel(struct Gladiotor_Instance *_instance, uint8_t id){
-if(_instance->id_control == g_var.id_control) {
-forward_Serial1_Gladiotor_send_control_timer_cancel(_instance, id);
-}
-}
-void forward_Gladiotor_send_arena_hitInfo(struct Gladiotor_Instance *_instance, uint8_t ID, uint8_t IDshooter){
-if(_instance->id_arena == g_var.id_arena) {
-forward_MQTT_Gladiotor_send_arena_hitInfo(_instance, ID, IDshooter);
 }
 }
 void forward_Gladiotor_send_control_shootCmd(struct Gladiotor_Instance *_instance, uint8_t ID){
@@ -446,9 +351,24 @@ if(_instance->id_control == g_var.id_control) {
 forward_Serial1_Gladiotor_send_control_shootCmd(_instance, ID);
 }
 }
+void forward_Gladiotor_send_arena_unregister(struct Gladiotor_Instance *_instance, uint8_t ID){
+if(_instance->id_arena == g_var.id_arena) {
+forward_MQTT_Gladiotor_send_arena_unregister(_instance, ID);
+}
+}
+void forward_Gladiotor_send_arena_shooting(struct Gladiotor_Instance *_instance, uint8_t ID, uint8_t time0, uint8_t time1){
+if(_instance->id_arena == g_var.id_arena) {
+forward_MQTT_Gladiotor_send_arena_shooting(_instance, ID, time0, time1);
+}
+}
 void forward_Gladiotor_send_cmd_beenHit(struct Gladiotor_Instance *_instance, uint8_t IDshooter){
 if(_instance->id_cmd == g_var.id_cmd) {
 forward_Websocket_Gladiotor_send_cmd_beenHit(_instance, IDshooter);
+}
+}
+void forward_Gladiotor_send_arena_hitInfo(struct Gladiotor_Instance *_instance, uint8_t ID, uint8_t IDshooter){
+if(_instance->id_arena == g_var.id_arena) {
+forward_MQTT_Gladiotor_send_arena_hitInfo(_instance, ID, IDshooter);
 }
 }
 
@@ -457,12 +377,20 @@ void externalMessageEnqueue(uint8_t * msg, uint8_t msgSize, uint16_t listener_id
 if ((msgSize >= 2) && (msg != NULL)) {
 uint8_t msgSizeOK = 0;
 switch(msg[0] * 256 + msg[1]) {
-case 192:
-if(msgSize == 3) {
+case 101:
+if(msgSize == 7) {
 msgSizeOK = 1;}
 break;
 case 103:
 if(msgSize == 2) {
+msgSizeOK = 1;}
+break;
+case 201:
+if(msgSize == 3) {
+msgSizeOK = 1;}
+break;
+case 202:
+if(msgSize == 3) {
 msgSizeOK = 1;}
 break;
 case 104:
@@ -471,18 +399,6 @@ msgSizeOK = 1;}
 break;
 case 200:
 if(msgSize == 2) {
-msgSizeOK = 1;}
-break;
-case 201:
-if(msgSize == 3) {
-msgSizeOK = 1;}
-break;
-case 101:
-if(msgSize == 7) {
-msgSizeOK = 1;}
-break;
-case 202:
-if(msgSize == 3) {
 msgSizeOK = 1;}
 break;
 }
@@ -508,8 +424,6 @@ fifo_unlock_and_notify();
 void initialize_configuration_GladiotorCfg() {
 // Initialize connectors
 register_external_Gladiotor_send_control_shootCmd_listener(&forward_Gladiotor_send_control_shootCmd);
-register_external_Gladiotor_send_control_timer_start_listener(&forward_Gladiotor_send_control_timer_start);
-register_external_Gladiotor_send_control_timer_cancel_listener(&forward_Gladiotor_send_control_timer_cancel);
 register_external_Gladiotor_send_cmd_beenHit_listener(&forward_Gladiotor_send_cmd_beenHit);
 register_external_Gladiotor_send_arena_register_listener(&forward_Gladiotor_send_arena_register);
 register_external_Gladiotor_send_arena_unregister_listener(&forward_Gladiotor_send_arena_unregister);
@@ -580,6 +494,7 @@ int main(int argc, char *argv[]) {
 int emptyEventConsumed = 1;
 while (emptyEventConsumed != 0) {
 emptyEventConsumed = 0;
+emptyEventConsumed += Gladiotor_handle_empty_event(&g_var);
 }
 
     processMessageQueue();

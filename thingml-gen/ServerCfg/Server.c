@@ -95,6 +95,77 @@ default: break;
 }
 
 // Event Handlers for incoming messages:
+void Server_handle_gui_gui_gameStop(struct Server_Instance *_instance) {
+uint8_t Server_S_State_event_consumed = 0;
+if (_instance->Server_S_State == SERVER_S_RUNNING_STATE) {
+uint8_t Server_S_Running_State_event_consumed = 0;
+if (_instance->Server_S_Running_State == SERVER_S_RUNNING_PLAYING_STATE) {
+if (Server_S_Running_State_event_consumed == 0 && 1) {
+Server_S_OnExit(SERVER_S_RUNNING_PLAYING_STATE, _instance);
+_instance->Server_S_Running_State = SERVER_S_RUNNING_LOUNGE_STATE;
+_instance->Server_timeLeft__var = 0;
+Server_send_gui_secondsLeft(_instance, 0);
+Server_S_OnEntry(SERVER_S_RUNNING_LOUNGE_STATE, _instance);
+Server_S_Running_State_event_consumed = 1;
+}
+}
+Server_S_State_event_consumed = 0 | Server_S_Running_State_event_consumed ;
+}
+}
+void Server_handle_gui_listStatuses(struct Server_Instance *_instance) {
+uint8_t Server_S_State_event_consumed = 0;
+if (_instance->Server_S_State == SERVER_S_RUNNING_STATE) {
+uint8_t Server_S_Running_State_event_consumed = 0;
+Server_S_State_event_consumed = 0 | Server_S_Running_State_event_consumed ;
+if (Server_S_State_event_consumed == 0 && 1) {
+_instance->Server_n__var = 1;
+while(_instance->Server_n__var < _instance->Server_nextId__var) {
+if(_instance->Server_registered__var[_instance->Server_n__var]
+ == 1) {
+f_Server_sendTeamStatus(_instance, _instance->Server_n__var);
+
+}
+_instance->Server_n__var = _instance->Server_n__var + 1;
+
+}
+Server_S_State_event_consumed = 1;
+}
+}
+}
+void Server_handle_gui_getGameStatus(struct Server_Instance *_instance) {
+uint8_t Server_S_State_event_consumed = 0;
+if (_instance->Server_S_State == SERVER_S_RUNNING_STATE) {
+uint8_t Server_S_Running_State_event_consumed = 0;
+if (_instance->Server_S_Running_State == SERVER_S_RUNNING_LOUNGE_STATE) {
+if (Server_S_Running_State_event_consumed == 0 && 1) {
+Server_send_gui_gameStatus(_instance, 0);
+Server_S_Running_State_event_consumed = 1;
+}
+}
+else if (_instance->Server_S_Running_State == SERVER_S_RUNNING_PLAYING_STATE) {
+if (Server_S_Running_State_event_consumed == 0 && 1) {
+Server_send_gui_gameStatus(_instance, 1);
+Server_S_Running_State_event_consumed = 1;
+}
+}
+Server_S_State_event_consumed = 0 | Server_S_Running_State_event_consumed ;
+}
+}
+void Server_handle_gui_gui_gameStart(struct Server_Instance *_instance) {
+uint8_t Server_S_State_event_consumed = 0;
+if (_instance->Server_S_State == SERVER_S_RUNNING_STATE) {
+uint8_t Server_S_Running_State_event_consumed = 0;
+if (_instance->Server_S_Running_State == SERVER_S_RUNNING_LOUNGE_STATE) {
+if (Server_S_Running_State_event_consumed == 0 && 1) {
+Server_S_OnExit(SERVER_S_RUNNING_LOUNGE_STATE, _instance);
+_instance->Server_S_Running_State = SERVER_S_RUNNING_PLAYING_STATE;
+Server_S_OnEntry(SERVER_S_RUNNING_PLAYING_STATE, _instance);
+Server_S_Running_State_event_consumed = 1;
+}
+}
+Server_S_State_event_consumed = 0 | Server_S_Running_State_event_consumed ;
+}
+}
 void Server_handle_clock_clock_tick(struct Server_Instance *_instance) {
 uint8_t Server_S_State_event_consumed = 0;
 if (_instance->Server_S_State == SERVER_S_RUNNING_STATE) {
@@ -117,34 +188,13 @@ Server_S_Running_State_event_consumed = 1;
 Server_S_State_event_consumed = 0 | Server_S_Running_State_event_consumed ;
 }
 }
-void Server_handle_arena_register(struct Server_Instance *_instance, uint8_t ip1, uint8_t ip2, uint8_t ip3, uint8_t ip4) {
-uint8_t Server_S_State_event_consumed = 0;
-if (_instance->Server_S_State == SERVER_S_RUNNING_STATE) {
-uint8_t Server_S_Running_State_event_consumed = 0;
-Server_S_State_event_consumed = 0 | Server_S_Running_State_event_consumed ;
-if (Server_S_State_event_consumed == 0 && 1) {
-_instance->Server_registered__var[_instance->Server_nextId__var] = 1;
-_instance->Server_scores__var[_instance->Server_nextId__var] = 0;
-_instance->Server_shots__var[_instance->Server_nextId__var] = 0;
-_instance->Server_hits__var[_instance->Server_nextId__var] = 0;
-_instance->Server_ips1__var[_instance->Server_nextId__var] = ip1;
-_instance->Server_ips2__var[_instance->Server_nextId__var] = ip2;
-_instance->Server_ips3__var[_instance->Server_nextId__var] = ip3;
-_instance->Server_ips4__var[_instance->Server_nextId__var] = ip4;
-Server_send_arena_assignID(_instance, _instance->Server_nextId__var, ip1, ip2, ip3, ip4);
-f_Server_sendTeamStatus(_instance, _instance->Server_nextId__var);
-_instance->Server_nextId__var = _instance->Server_nextId__var + 1;
-Server_S_State_event_consumed = 1;
-}
-}
-}
-void Server_handle_arena_shooting(struct Server_Instance *_instance, uint8_t ID, uint8_t time0, uint8_t time1) {
+void Server_handle_arena_hitInfo(struct Server_Instance *_instance, uint8_t ID, uint8_t IDshooter) {
 uint8_t Server_S_State_event_consumed = 0;
 if (_instance->Server_S_State == SERVER_S_RUNNING_STATE) {
 uint8_t Server_S_Running_State_event_consumed = 0;
 if (_instance->Server_S_Running_State == SERVER_S_RUNNING_PLAYING_STATE) {
 if (Server_S_Running_State_event_consumed == 0 && 1) {
-_instance->Server_shots__var[ID] = _instance->Server_shots__var[ID]
+_instance->Server_hits__var[ID] = _instance->Server_hits__var[ID]
  + 1;
 f_Server_sendTeamStatus(_instance, ID);
 Server_S_Running_State_event_consumed = 1;
@@ -172,13 +222,13 @@ Server_S_State_event_consumed = 1;
 }
 }
 }
-void Server_handle_arena_hitInfo(struct Server_Instance *_instance, uint8_t ID, uint8_t IDshooter) {
+void Server_handle_arena_shooting(struct Server_Instance *_instance, uint8_t ID, uint8_t time0, uint8_t time1) {
 uint8_t Server_S_State_event_consumed = 0;
 if (_instance->Server_S_State == SERVER_S_RUNNING_STATE) {
 uint8_t Server_S_Running_State_event_consumed = 0;
 if (_instance->Server_S_Running_State == SERVER_S_RUNNING_PLAYING_STATE) {
 if (Server_S_Running_State_event_consumed == 0 && 1) {
-_instance->Server_hits__var[ID] = _instance->Server_hits__var[ID]
+_instance->Server_shots__var[ID] = _instance->Server_shots__var[ID]
  + 1;
 f_Server_sendTeamStatus(_instance, ID);
 Server_S_Running_State_event_consumed = 1;
@@ -187,41 +237,23 @@ Server_S_Running_State_event_consumed = 1;
 Server_S_State_event_consumed = 0 | Server_S_Running_State_event_consumed ;
 }
 }
-void Server_handle_gui_getGameStatus(struct Server_Instance *_instance) {
-uint8_t Server_S_State_event_consumed = 0;
-if (_instance->Server_S_State == SERVER_S_RUNNING_STATE) {
-uint8_t Server_S_Running_State_event_consumed = 0;
-if (_instance->Server_S_Running_State == SERVER_S_RUNNING_LOUNGE_STATE) {
-if (Server_S_Running_State_event_consumed == 0 && 1) {
-Server_send_gui_gameStatus(_instance, 0);
-Server_S_Running_State_event_consumed = 1;
-}
-}
-else if (_instance->Server_S_Running_State == SERVER_S_RUNNING_PLAYING_STATE) {
-if (Server_S_Running_State_event_consumed == 0 && 1) {
-Server_send_gui_gameStatus(_instance, 0);
-Server_S_Running_State_event_consumed = 1;
-}
-}
-Server_S_State_event_consumed = 0 | Server_S_Running_State_event_consumed ;
-}
-}
-void Server_handle_gui_listStatuses(struct Server_Instance *_instance) {
+void Server_handle_arena_register(struct Server_Instance *_instance, uint8_t ip1, uint8_t ip2, uint8_t ip3, uint8_t ip4) {
 uint8_t Server_S_State_event_consumed = 0;
 if (_instance->Server_S_State == SERVER_S_RUNNING_STATE) {
 uint8_t Server_S_Running_State_event_consumed = 0;
 Server_S_State_event_consumed = 0 | Server_S_Running_State_event_consumed ;
 if (Server_S_State_event_consumed == 0 && 1) {
-_instance->Server_n__var = 1;
-while(_instance->Server_n__var < _instance->Server_nextId__var) {
-if(_instance->Server_registered__var[_instance->Server_n__var]
- == 1) {
-f_Server_sendTeamStatus(_instance, _instance->Server_n__var);
-
-}
-_instance->Server_n__var = _instance->Server_n__var + 1;
-
-}
+_instance->Server_registered__var[_instance->Server_nextId__var] = 1;
+_instance->Server_scores__var[_instance->Server_nextId__var] = 0;
+_instance->Server_shots__var[_instance->Server_nextId__var] = 0;
+_instance->Server_hits__var[_instance->Server_nextId__var] = 0;
+_instance->Server_ips1__var[_instance->Server_nextId__var] = ip1;
+_instance->Server_ips2__var[_instance->Server_nextId__var] = ip2;
+_instance->Server_ips3__var[_instance->Server_nextId__var] = ip3;
+_instance->Server_ips4__var[_instance->Server_nextId__var] = ip4;
+Server_send_arena_assignID(_instance, _instance->Server_nextId__var, ip1, ip2, ip3, ip4);
+f_Server_sendTeamStatus(_instance, _instance->Server_nextId__var);
+_instance->Server_nextId__var = _instance->Server_nextId__var + 1;
 Server_S_State_event_consumed = 1;
 }
 }

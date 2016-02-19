@@ -8,7 +8,7 @@ configuration GladiotorCfg {
 	instance mc : MCU
 
 	connector mc.control over Serial1
-	connector mc.clock over Timer
+	connector mc.clock over Timer @hardware_timer "3"
 }
 
 thing MCU includes CmdMsgs, TimerMsgs {
@@ -16,13 +16,13 @@ thing MCU includes CmdMsgs, TimerMsgs {
 	property receiverPin : UInt8 = 8
 
 	provided port control {
-		receives shootCmd, timer_start, timer_cancel
-		sends beenHit, timeout, ready
+		receives shootCmd
+		sends beenHit, ready
 	}
 
 	provided port clock {
-		sends timer_start, timer_cancel
-		receives timeout, 50ms_tic
+		//sends timer_start, timer_cancel
+		receives 50ms_tic
 	}
 
 	function refresh() do
@@ -46,14 +46,14 @@ thing MCU includes CmdMsgs, TimerMsgs {
 			transition -> Active action control!ready()
 		}
 		state Active {
-			internal event e : control?timer_start
-			action clock!timer_start(e.id, e.time)
+			//internal event e : control?timer_start
+			//action clock!timer_start(e.id, e.time)
 
-			internal event e : control?timer_cancel
-			action clock!timer_cancel(e.id)
+			//internal event e : control?timer_cancel
+			//action clock!timer_cancel(e.id)
 
-			internal event e : clock?timeout
-			action control!timeout(e.id)
+			//internal event e : clock?timeout
+			//action control!timeout(e.id)
 
 			internal event e : clock?50ms_tic
 			action refresh()

@@ -46,8 +46,8 @@ thing Gladiotor includes GladiotorsMsgs, CmdMsgs, TimerMsgs {
 	}
 
 	required port control {
-		sends shootCmd, timer_start, timer_cancel
-		receives beenHit, timeout, ready
+		sends shootCmd//, timer_start, timer_cancel
+		receives beenHit, ready//,timeout
 	}
 
 	required port arena {
@@ -77,7 +77,7 @@ thing Gladiotor includes GladiotorsMsgs, CmdMsgs, TimerMsgs {
 			state Identification {
 				on entry do
 					print "Identification\n"
-					control!timer_start(1, 3000)
+					//control!timer_start(1, 3000)
 					arena!register(ip[0], ip[1], ip[2], ip[3])
 				end
 
@@ -85,10 +85,10 @@ thing Gladiotor includes GladiotorsMsgs, CmdMsgs, TimerMsgs {
 				action do 
 					print "received ID\n"
 					ID = e.ID
-					control!timer_cancel(1)
+					//control!timer_cancel(1)
 				end
-				transition -> Identification event control?timeout
-				action print "timeout\n"
+				//transition -> Identification event control?timeout
+				//action print "timeout\n"
 			}
 
 			state Wait {
@@ -105,11 +105,11 @@ thing Gladiotor includes GladiotorsMsgs, CmdMsgs, TimerMsgs {
 					print "beenHit\n"
 					arena!hitInfo(ID, e.IDshooter)
 					cmd!beenHit(e.IDshooter)
-					control!timer_start(1, InactiveTime)
+					//control!timer_start(1, InactiveTime)
 				end
 			}
 			state Inactive {
-				transition -> Active event e : control?timeout
+				transition -> Active //event e : control?timeout
 				action print "Active again\n"
 			}
 
