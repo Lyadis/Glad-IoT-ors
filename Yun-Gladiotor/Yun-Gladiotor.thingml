@@ -51,8 +51,8 @@ thing Gladiotor includes GladiotorsMsgs, CmdMsgs, TimerMsgs {
 	}
 
 	required port arena {
-		sends register, unregister, shooting, hitInfo
-		receives assignID, gameStart, gameStop
+		sends register, unregister, shooting, hitInfo, pong
+		receives assignID, gameStart, gameStop, ping
 	}
 
 	statechart C init Init {
@@ -71,6 +71,8 @@ thing Gladiotor includes GladiotorsMsgs, CmdMsgs, TimerMsgs {
 				end
 				print "Reset\n"
 			end
+			
+			internal event e : arena?ping action arena!pong(ID, e.N)
 
 			transition -> Game event arena?gameStop
 
