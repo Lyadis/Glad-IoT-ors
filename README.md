@@ -19,6 +19,8 @@ This project includes the following modules
 	* Glad-IoT-or module includes sources for both cheap of the arduino yun (ATmega32u4 and AR9331)
 	* Server module should run on a Posix System
 
+![Architecture](img/Glad-IoT-ors.png)
+
 ##Physical Module
 3D schematic are in the 3D Printable parts folder.
 
