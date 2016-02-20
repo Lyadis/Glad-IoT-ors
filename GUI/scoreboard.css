@@ -17,15 +17,65 @@ div.header div {
 }
 
 div#teamlist {
-  display: table;
   width: 100%;
+  display: flex;
+  flex-wrap: wrap;
 }
 
 div#teamlist div.team {
-  display: table-cell;
   height: 200px;
-  width: 49%;
+  width: 50%;
+  flex-shrink: 0;
+  margin-bottom: 20px;
+  display: flex;
+}
+
+div#teamlist div.team > div {
+  height: 100%;
+  margin: 0;
+}
+
+div#teamlist div.team div.color {
+  width: 20%;
+  background-color: red;
+}
+
+div#teamlist div.team div.status {
+  width: 80%;
   background-color: #222;
-  border-spacing: 10px;
-  border-collapse: separate;
+  margin-right: 20px;
+}
+
+div#teamlist div.team h2 {
+  padding-left: 20px;
+  text-align: left;
+  font-size: 36px;
+  font-weight: normal;
+}
+
+div#teamlist div.team span {
+  font-size: 50px;
+  display: inline-block;
+  width: 49%;
+}
+div#teamlist div.team span.success {
+  color: lightgreen;
+  text-align: right;
+}
+div#teamlist div.team span.hits {
+  color: lightcoral;
+  text-align: left;
+}
+
+div#teamlist div.team div.accuracy {
+  text-align: right;
+}
+
+div#teamlist div.team div.accuracy span {
+  font-size: 20px;
+  margin-right: 20px;
+}
+
+div#teamlist div#team-0 {
+  display: none;
 }

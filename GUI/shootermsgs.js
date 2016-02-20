@@ -1,4 +1,5 @@
 var shooterMsgSend = function() {};
+var shooterMsgOnConnect = function() {};
 
 /* ThingML encoding/decoding */
 var shooterMessages = {
@@ -38,6 +39,7 @@ var connectShooter = function(ip) {
     socket.onopen = function() {
       console.log('Opened...');
       shooterMsgSend = function(msg) { socket.send(msg); };
+      shooterMsgOnConnect();
     };
     socket.onmessage = function(msg) { decodeShooterMsg(msg.data); };
     socket.onclose = function() {

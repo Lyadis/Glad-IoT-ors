@@ -74,3 +74,36 @@ h1 {
 div#teamchooser { display: none; }
 div#buttons { display: none; }
 div#hit { display: none; }
+
+
+div#teamlist div.team > div {
+  height: 100%;
+  margin: 0;
+}
+
+div.team {
+  width: 80%;
+  height: 100px;
+  margin: auto;
+  margin-bottom: 20px;
+  display: flex;
+}
+
+div#teamlist div.team div.color {
+  width: 20%;
+  background-color: red;
+}
+
+div#teamlist div.team div.status {
+  width: 80%;
+  background-color: #222;
+  margin-right: 20px;
+}
+
+div#teamlist div.team div.status h2 {
+  font-size: 35px;
+}
+
+div#teamlist div#team-0 {
+  display: none;
+}

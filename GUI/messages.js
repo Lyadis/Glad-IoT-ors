@@ -1,4 +1,5 @@
 var msgSend = function() {};
+var msgOnConnect = function() {};
 
 /* ThingML encoding/decoding */
 var thingmlMessages = {
@@ -56,6 +57,7 @@ var decodeThingmlMsg = function(msg) {
     socket = new WebSocket('ws://10.59.10.3:9000','ThingML-protocol');
     socket.onopen = function() {
       msgSend = function(msg) { socket.send(msg); };
+      msgOnConnect();
     };
     socket.onmessage = function(msg) { decodeThingmlMsg(msg.data); };
     socket.onclose = function() {
