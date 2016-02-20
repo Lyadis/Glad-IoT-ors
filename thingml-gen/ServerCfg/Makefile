@@ -1,8 +1,8 @@
 CC = cc
 LIBS = -lpthread -l mosquitto -l websockets -l ssl -l crypto -l z
 CFLAGS = -O2 -w
-SRCS = Server.c ClockLinux.c ServerCfg_cfg.c runtime.c
-OBJS = Server.o ClockLinux.o ServerCfg_cfg.o runtime.o
+SRCS = ClockLinux.c Server.c ServerCfg_cfg.c runtime.c
+OBJS = ClockLinux.o Server.o ServerCfg_cfg.o runtime.o
 
 all : ServerCfg
 

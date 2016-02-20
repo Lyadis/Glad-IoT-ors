@@ -143,6 +143,7 @@ thing Server includes ClockMsgs,GladiotorsMsgs,GuiMsgs {
 				end
 			}
 			
+/*
 			internal event clock?clock_tick action do
 				arena!ping(pingN)
 				pingN = pingN + 1
@@ -167,6 +168,7 @@ thing Server includes ClockMsgs,GladiotorsMsgs,GuiMsgs {
 					n = n + 1
 				end
 			end
+*/
 			
 			internal event p : arena?pong action do
 				pongs[p.ID] = p.N

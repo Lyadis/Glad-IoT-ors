@@ -11,9 +11,28 @@ configuration GladiotorCfg {
 	connector mc.clock over Timer @hardware_timer "3"
 }
 
-thing MCU includes CmdMsgs, TimerMsgs {
-	property ledPin : UInt8 = 7
+thing MCU includes CmdMsgs, TimerMsgs 
+@c_header "
+#include <IRSendRev.h>\n
+ \n
+#define BIT_LEN         0\n
+#define BIT_START_H     1\n
+#define BIT_START_L     2\n
+#define BIT_DATA_H      3\n
+#define BIT_DATA_L      4\n
+#define BIT_DATA_LEN    5\n
+#define BIT_DATA        6\n
+\n
+bool ledON = false;
+const int ir_freq = 38;\n
+ \n
+unsigned char dtaSend[20];\n
+unsigned char dta[20];\n
+"
+{
+	property ledPin : UInt8 = 9
 	property receiverPin : UInt8 = 8
+	property receiverPinDebug : UInt8 = 7
 
 	provided port control {
 		receives shootCmd
@@ -25,23 +44,42 @@ thing MCU includes CmdMsgs, TimerMsgs {
 		receives 50ms_tic
 	}
 
+	function ir_init() do
+		'dtaSend[BIT_LEN]        = 11;			// all data that needs to be sent
+		    dtaSend[BIT_START_H]    = 180;			// the logic high duration of "Start"
+		    dtaSend[BIT_START_L]    = 91;			// the logic low duration of "Start"
+		    dtaSend[BIT_DATA_H]     = 11;			// the logic "long" duration in the communication
+		    dtaSend[BIT_DATA_L]     = 33;			// the logic "short" duration in the communication
+		 
+		    dtaSend[BIT_DATA_LEN]   = 1;
+		 '
+	    
+	end
+
 	function refresh() do
-		if('digitalRead('&receiverPin&')') do
-			control!beenHit(0)
+		if('IR.IsDta()') do
+			'IR.Recv(dta);'
+			control!beenHit('dta[BIT_DATA]')
+			'if(ledON){
+				digitalWrite('&receiverPinDebug&', HIGH);
+			} else {
+				digitalWrite('&receiverPinDebug&', LOW);
+			}
+			ledON= ! ledON;'
 		end
 	end
 
 	function shoot(id : UInt8) do
-		'digitalWrite('&receiverPin&', HIGH);
-		delay(50);
-		digitalWrite('&receiverPin&', LOW);'
+		'dtaSend[BIT_DATA+0]     = '&id&';'
+		'IR.Send(dtaSend, 38);'
 	end
 
 	statechart C init Setup {
 		state Setup {
 			on entry do
-				'pinMode('&receiverPin&', INPUT);'
-				'pinMode('&ledPin&', OUTPUT);'
+				ir_init()
+				'IR.Init('&receiverPin&');'
+				'pinMode('&receiverPinDebug&', OUTPUT);'
 			end
 			transition -> Active action control!ready()
 		}

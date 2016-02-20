@@ -27,11 +27,13 @@ uint16_t id_clock;
 int Server_S_State;
 int Server_S_Running_State;
 // Variables for the properties of the instance
+uint8_t Server_pingN__var;
 uint8_t Server_nextId__var;
 uint8_t * Server_registered__var;
 int16_t * Server_scores__var;
 int16_t * Server_shots__var;
 int16_t * Server_hits__var;
+uint8_t * Server_pongs__var;
 uint8_t * Server_ips1__var;
 uint8_t * Server_ips2__var;
 uint8_t * Server_ips3__var;
@@ -39,19 +41,21 @@ uint8_t * Server_ips4__var;
 uint16_t Server_playTime__var;
 uint16_t Server_timeLeft__var;
 uint8_t Server_n__var;
+uint16_t Server_t__var;
 
 };
 // Declaration of prototypes outgoing messages:
 void Server_S_OnEntry(int state, struct Server_Instance *_instance);
+void Server_handle_clock_clock_tick(struct Server_Instance *_instance);
+void Server_handle_gui_gui_gameStart(struct Server_Instance *_instance);
+void Server_handle_gui_getGameStatus(struct Server_Instance *_instance);
 void Server_handle_gui_gui_gameStop(struct Server_Instance *_instance);
 void Server_handle_gui_listStatuses(struct Server_Instance *_instance);
-void Server_handle_gui_getGameStatus(struct Server_Instance *_instance);
-void Server_handle_gui_gui_gameStart(struct Server_Instance *_instance);
-void Server_handle_clock_clock_tick(struct Server_Instance *_instance);
-void Server_handle_arena_hitInfo(struct Server_Instance *_instance, uint8_t ID, uint8_t IDshooter);
+void Server_handle_arena_register(struct Server_Instance *_instance, uint8_t ip1, uint8_t ip2, uint8_t ip3, uint8_t ip4);
 void Server_handle_arena_unregister(struct Server_Instance *_instance, uint8_t ID);
 void Server_handle_arena_shooting(struct Server_Instance *_instance, uint8_t ID, uint8_t time0, uint8_t time1);
-void Server_handle_arena_register(struct Server_Instance *_instance, uint8_t ip1, uint8_t ip2, uint8_t ip3, uint8_t ip4);
+void Server_handle_arena_hitInfo(struct Server_Instance *_instance, uint8_t ID, uint8_t IDshooter);
+void Server_handle_arena_pong(struct Server_Instance *_instance, uint8_t ID, uint8_t N);
 // Declaration of callbacks for incoming messages:
 void register_Server_send_arena_assignID_listener(void (*_listener)(struct Server_Instance *, uint8_t, uint8_t, uint8_t, uint8_t, uint8_t));
 void register_external_Server_send_arena_assignID_listener(void (*_listener)(struct Server_Instance *, uint8_t, uint8_t, uint8_t, uint8_t, uint8_t));
@@ -59,6 +63,8 @@ void register_Server_send_arena_gameStart_listener(void (*_listener)(struct Serv
 void register_external_Server_send_arena_gameStart_listener(void (*_listener)(struct Server_Instance *));
 void register_Server_send_arena_gameStop_listener(void (*_listener)(struct Server_Instance *));
 void register_external_Server_send_arena_gameStop_listener(void (*_listener)(struct Server_Instance *));
+void register_Server_send_arena_ping_listener(void (*_listener)(struct Server_Instance *, uint8_t));
+void register_external_Server_send_arena_ping_listener(void (*_listener)(struct Server_Instance *, uint8_t));
 void register_Server_send_gui_gameStatus_listener(void (*_listener)(struct Server_Instance *, uint8_t));
 void register_external_Server_send_gui_gameStatus_listener(void (*_listener)(struct Server_Instance *, uint8_t));
 void register_Server_send_gui_secondsLeft_listener(void (*_listener)(struct Server_Instance *, uint16_t));
