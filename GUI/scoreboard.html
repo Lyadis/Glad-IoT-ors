@@ -3,46 +3,32 @@
   <head>
     <meta charset=utf-8 http-equiv="Content-Language" content="en"/>
     <title>Glad-IoT-or Scoreboard</title>
-    <style type="text/css">
-      body {
-        background-color: black;
-        color: white;
-        font-family: sans-serif;
-        text-align: center;
-      }
-      
-      h1 {
-        font-size: 50px;
-      }
-      
-      
-      div.header div {
-        text-align: left;
-        display: inline-block;
-        width: 49%;
-        font-size: 40px
-      }
-      
-      
-      div#teamlist div.team {
-        
-      }
-    </style>
+    <link rel="stylesheet" type="text/css" href="scoreboard.css">
+    <script type="application/javascript" src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
+    <script type="application/javascript" src="messages.js"></script>
+    <script type="application/javascript" src="scoreboard.js"></script>
   </head>
   <body>
     <h1>Glad-IoT-ors Scoreboard</h1>
     <div class="header">
       <div>Teams: </div>
-      <div style="text-align:right">Time: <span id="time">10:00</span></div>
+      <div style="text-align:right">Time: <span id="time">00:00</span></div>
     </div>
     
     <div id="teamlist">
-      <div class="team" id="team-1">
+      <!-- Template -->
+      <div class="team" id="team-0">
+        <div class="color"></div>
+        <div class="status">
+          <h2>Team 0</h2>
+          <div>
+            <span class="success">00</span>
+            <span class="hits">00</span>
+          </div>
+          <div class="accuracy"><span>100%</span></div>
+        </div>
       </div>
-      <div class="team" id="team-2">
-      </div>
-      <div class="team" id="team-3">
-      </div>
+      <!-- List -->
     </div>
   </body>
 </html>
