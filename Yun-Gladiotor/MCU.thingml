@@ -70,7 +70,7 @@ unsigned char dta[20];\n
 	end
 
 	function shoot(id : UInt8) do
-		'dtaSend[BIT_DATA+0]     = '&id&';'
+		'dtaSend[BIT_DATA]     = '&id&';'
 		'IR.Send(dtaSend, 38);'
 	end
 
